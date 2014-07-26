@@ -14,7 +14,6 @@ class AStar extends IPathfinder
 	
 	override public function FindPath(startNode_:Node, endNode_:Node):Array<Node>
 	{
-		
 		var open:Array<Node> = new Array<Node>();
 		var closed:Array<Node> = new Array<Node>();
 		
@@ -43,6 +42,12 @@ class AStar extends IPathfinder
 					
 					var tempG:Float = G + neighbours[i].distanceBetween;
 					var closedIndex:Int = Contains(closed, neighbours[i].connectedNode);
+					
+					if (neighbours[i].connectedNode.get_traversable() == false)
+					{
+						//dont bother with this node if it is not traversable
+						continue;
+					}
 					
 					if (closedIndex > -1)
 					{

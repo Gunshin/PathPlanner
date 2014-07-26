@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<project>
+	<!-- NMML reference: https://gist.github.com/1763850 -->
+	
+	<!-- metadata, make sure 'package' is at least 3 segments (ie. com.mycompany.myproject) -->
+	<meta title="PathPlanner" package="pathPlanner" version="1.0.0" company="Michael Stephens" />
+	
+	<!-- output -->
+	<app main="Pathplanner" file="pathPlanner" path="bin" />
+	
+	<!-- classpath, haxe libs -->
+	<source path="src" />
+	
+	<!-- assets -->
+	<icon path="assets/openfl.svg" />
+	<assets path="Assets" rename="assets" include="*" exclude="openfl.svg" />
+	
+	<!-- optimize output
+	<haxeflag name="-dce full" /> -->
+	
+</project>

@@ -12,15 +12,19 @@ class Node
 	var x(get, null):Float;
 	var y(get, null):Float;
 	
+	@:isVar var traversable(get, set):Bool;
+	
 	var heuristic(get, null):Float = 0;
 	@:isVar var pathCost(get, set):Float = 0;
 	
 	@:isVar var parent(get, set):Node = null;
 		
-	public function new(x_:Float, y_:Float) 
+	public function new(x_:Float, y_:Float, traversable_:Bool) 
 	{
 		x = x_;
 		y = y_;
+		
+		traversable = traversable_;
 	}
 	
 	public function get_x():Float
@@ -31,6 +35,16 @@ class Node
 	public function get_y():Float
 	{
 		return y;
+	}
+	
+	public function get_traversable():Bool
+	{
+		return traversable;
+	}
+	
+	public function set_traversable(traversable_:Bool):Bool
+	{
+		return traversable = traversable_;
 	}
 	
 	public function get_neighbours():Array<DistanceNode>
