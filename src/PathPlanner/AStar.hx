@@ -14,6 +14,8 @@ class AStar extends IPathfinder
 	
 	override public function FindPath(startNode_:Node, endNode_:Node):Array<Node>
 	{
+		startNode_.set_parent(null);
+		
 		var open:Array<Node> = new Array<Node>();
 		var closed:Array<Node> = new Array<Node>();
 		
@@ -21,7 +23,7 @@ class AStar extends IPathfinder
 		
 		var targetReached:Bool = false;
 		
-		while (!targetReached)
+		while (!targetReached && open.length > 0)
 		{
 			var currentNode:Node = open.pop();
 			
@@ -46,33 +48,33 @@ class AStar extends IPathfinder
 					if (neighbours[i].connectedNode.get_traversable() == false)
 					{
 						//dont bother with this node if it is not traversable
-						continue;
-					}
-					
-					if (closedIndex > -1)
-					{
-						// if it is in the closed set, but we have found a better route to this neighbour, update it with the better route.
-						if (tempG < neighbours[i].connectedNode.get_pathCost())
-						{
-							neighbours[i].connectedNode.set_parent(currentNode);
-							neighbours[i].connectedNode.set_pathCost(tempG);
-							neighbours[i].connectedNode.CalculateHeuristic(endNode_);
-						}
 					}
 					else
 					{
-						// if the neighbour is not in the open set, add it.
-						var openIndex:Int = Contains(open, neighbours[i].connectedNode);
-						if (openIndex == -1)
+						if (closedIndex > -1)
 						{
-							neighbours[i].connectedNode.set_parent(currentNode);
-							neighbours[i].connectedNode.set_pathCost(tempG);
-							neighbours[i].connectedNode.CalculateHeuristic(endNode_);
-							
-							Insert(open, neighbours[i].connectedNode);
+							// if it is in the closed set, but we have found a better route to this neighbour, update it with the better route.
+							if (tempG < neighbours[i].connectedNode.get_pathCost())
+							{
+								neighbours[i].connectedNode.set_parent(currentNode);
+								neighbours[i].connectedNode.set_pathCost(tempG);
+								neighbours[i].connectedNode.CalculateHeuristic(endNode_);
+							}
+						}
+						else
+						{
+							// if the neighbour is not in the open set, add it.
+							var openIndex:Int = Contains(open, neighbours[i].connectedNode);
+							if (openIndex == -1)
+							{
+								neighbours[i].connectedNode.set_parent(currentNode);
+								neighbours[i].connectedNode.set_pathCost(tempG);
+								neighbours[i].connectedNode.CalculateHeuristic(endNode_);
+								
+								Insert(open, neighbours[i].connectedNode);
+							}
 						}
 					}
-					
 					
 				}
 			}
