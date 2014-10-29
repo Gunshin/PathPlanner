@@ -4,9 +4,9 @@ package pathPlanner;
  * ...
  * @author Michael Stephens
  */
-class IEntity 
+interface IEntity 
 {
 
-	public function ReceivePath(path:Array<Node>):Void{}
+	public function ReceivePath(path:Array<Node>):Void;
 	
 }

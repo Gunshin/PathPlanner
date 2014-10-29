@@ -1,23 +1,29 @@
 package pathPlanner;
 
+import de.polygonal.ds.Prioritizable;
+
 /**
  * ...
  * @author Michael Stephens
  */
-class Node 
+class Node implements Prioritizable
 {
-
-	var neighbours(get, null):Array<DistanceNode> = new Array<DistanceNode>();
 	
-	var x(get, null):Float;
-	var y(get, null):Float;
+	// prioritizable implements
+	public var position:Int;
+	public var priority:Float = 0;
 	
-	@:isVar var traversable(get, set):Bool;
+	public var neighbours(get, null):Array<DistanceNode> = new Array<DistanceNode>();
 	
-	var heuristic(get, null):Float = 0;
-	@:isVar var pathCost(get, set):Float = 0;
+	public var x(get, null):Float;
+	public var y(get, null):Float;
 	
-	@:isVar var parent(get, set):Node = null;
+	@:isVar public  var traversable(get, set):Bool;
+	
+	public var heuristic:Float = 0;
+	@:isVar public var pathCost(get, set):Float = 0;
+	
+	@:isVar public var parent(get, set):Node = null;
 		
 	public function new(x_:Float, y_:Float, traversable_:Bool) 
 	{
@@ -27,27 +33,27 @@ class Node
 		traversable = traversable_;
 	}
 	
-	public function get_x():Float
+	function get_x():Float
 	{
 		return x;
 	}
 	
-	public function get_y():Float
+	function get_y():Float
 	{
 		return y;
 	}
 	
-	public function get_traversable():Bool
+	function get_traversable():Bool
 	{
 		return traversable;
 	}
 	
-	public function set_traversable(traversable_:Bool):Bool
+	function set_traversable(traversable_:Bool):Bool
 	{
 		return traversable = traversable_;
 	}
 	
-	public function get_neighbours():Array<DistanceNode>
+	function get_neighbours():Array<DistanceNode>
 	{
 		return neighbours;
 	}
@@ -82,34 +88,30 @@ class Node
 		return false;
 	}
 	
-	public function get_heuristic()
-	{
-		return heuristic;
-	}
-	
-	public function CalculateHeuristic(targetNode_:Node)
-	{
-		heuristic = Math.sqrt(Math.pow(get_x() - targetNode_.get_x(), 2) + Math.pow(get_y() - targetNode_.get_y(), 2)) + get_pathCost();
-	}
-	
-	public function get_pathCost():Float
+	function get_pathCost():Float
 	{
 		return pathCost;
 	}
 	
-	public function set_pathCost(pathCost_:Float):Float
+	function set_pathCost(pathCost_:Float):Float
 	{
 		return pathCost = pathCost_;
 	}
 	
-	public function get_parent():Node
+	function get_parent():Node
 	{
 		return parent;
 	}
 	
-	public function set_parent(parent_:Node):Node
+	function set_parent(parent_:Node):Node
 	{
 		return parent = parent_;
 	}
+	
+	/*public function CalculateHeuristic(targetNode_:Node)
+	{
+		heuristic = Math.sqrt(Math.pow(get_x() - targetNode_.get_x(), 2) + Math.pow(get_y() - targetNode_.get_y(), 2)) + get_pathCost();
+	}*/
+	
 }
 

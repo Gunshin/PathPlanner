@@ -19,17 +19,28 @@ class Main
 		var x:Int = 1;
 		var y:Int = 1;
 		
-		trace("length = " + map[x][y].get_neighbours().length);
-		for (i in 0...map[x][y].get_neighbours().length)
+		trace("length = " + map[x][y].neighbours.length);
+		/*for (i in 0...map[x][y].neighbours.length)
 		{
-			trace(map[x][y].get_neighbours()[i].connectedNode.get_x() + " _ " + map[x][y].get_neighbours()[i].connectedNode.get_y());
-		}
+			trace(map[x][y].neighbours[i].connectedNode.x + " _ " + map[x][y].neighbours[i].connectedNode.y);
+		}*/
 		
-		var path:Array<Node> = pathfinder.FindPath(map[0][0], map[15][10]);
+		var path:Array<Node> = pathfinder.FindPath(map[0][0], map[14][9], 
+		function(nodeOne, nodeTwo)
+		{
+			/*
+			 * very slightly overestimate so that we get the most direct looking path.
+			 * due to certain paths giving the exact same cost, the nodes which are added first are selected first resulting in a slightly odd looking path.
+			 * 
+			 * Need to visualise it fully, still looks problematic
+			 */
+			return 1.01 * Math.sqrt(Math.pow(nodeOne.x - nodeTwo.x, 2) + Math.pow(nodeOne.y - nodeTwo.y, 2));
+		}
+		);
 		
 		for (i in 0...path.length)
 		{
-			trace(path[i].get_x() + " _ " + path[i].get_y());
+			trace(path[i].x + " _ " + path[i].y);
 		}
 		
 		while (true)
