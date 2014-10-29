@@ -28,11 +28,9 @@ class AStar implements IPathfinder
 		while (!targetReached && !open.isEmpty())
 		{
 			var currentNode:Node = open.dequeue();
-			trace(currentNode.x + " _ " + currentNode.y);
 			
 			if (currentNode == endNode_)
 			{
-				trace("found path");
 				targetReached = true;
 			}
 			else
@@ -43,13 +41,10 @@ class AStar implements IPathfinder
 				
 				var neighbours:Array<DistanceNode> = currentNode.neighbours;
 				
-				trace("neighbour count = " + neighbours.length);
-				
 				for (i in 0...neighbours.length)
 				{
 					
 					var tempG:Float = G + neighbours[i].distanceBetween;
-					//var closedIndex:Int = PathUtility.Contains(closed, neighbours[i].connectedNode);
 					
 					if (neighbours[i].connectedNode.traversable == false)
 					{
@@ -82,8 +77,6 @@ class AStar implements IPathfinder
 								// since we are adding it to the queue for the first time, we need to set its priority
 								neighbours[i].connectedNode.priority = neighbours[i].connectedNode.pathCost + neighbours[i].connectedNode.heuristic;
 								open.enqueue(neighbours[i].connectedNode);
-								
-								trace("added neighbour " + neighbours[i].connectedNode.x + " _ " + neighbours[i].connectedNode.y + " to open");
 							}
 						}
 					}
