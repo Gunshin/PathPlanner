@@ -19,7 +19,7 @@ class Main
 		var x:Int = 1;
 		var y:Int = 1;
 		
-		trace("length = " + map[x][y].neighbours.length);
+		trace("length = " + map[x][y].GetNeighbours().length);
 		/*for (i in 0...map[x][y].neighbours.length)
 		{
 			trace(map[x][y].neighbours[i].connectedNode.x + " _ " + map[x][y].neighbours[i].connectedNode.y);
@@ -43,10 +43,16 @@ class Main
 			trace(path[i].x + " _ " + path[i].y);
 		}
 		
-		while (true)
+		var map:Map = new Map(10, 10);
+		
+		map.AddNeighbour(map.GetNodeByIndex(0, 0), map.GetNodeByIndex(0, 9));
+		
+		map.RemoveNeighbour(map.GetNodeByIndex(0, 0), map.GetNodeByIndex(0, 9));
+		
+		/*while (true)
 		{
 			
-		}
+		}*/
 		
 	}
 	
@@ -62,7 +68,7 @@ class Main
 			for (j in 0...width)
 			{
 				
-				map[i][j] = new Node(j, i, true);
+				map[i][j] = new Node(j, i, true, new GraphStructureIndirect());
 				
 			}
 		}

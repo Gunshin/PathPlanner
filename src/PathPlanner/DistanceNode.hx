@@ -15,13 +15,13 @@ class DistanceNode
 		
 		connectedNode = connectedNode_;
 		
-		if (currentNode_ != null)
-		{
-			distanceBetween = Math.sqrt(Math.pow(connectedNode_.x - currentNode_.x, 2) + Math.pow(connectedNode_.y - currentNode_.y, 2));
-		}
-		else if(distance_ != null)
+		if(distance_ != null)
 		{
 			distanceBetween = distance_;
+		}
+		else if (currentNode_ != null)
+		{
+			distanceBetween = Math.sqrt(Math.pow(connectedNode_.x - currentNode_.x, 2) + Math.pow(connectedNode_.y - currentNode_.y, 2));
 		}
 		
 	}

@@ -41,17 +41,17 @@ class PathUtility
 		
 	}*/
 	
-	/*static public function Contains(array_:Array<Node>, node_:Node):Int
+	static public function Contains(array_:Array<DistanceNode>, node_:Node):Int
 	{
 		for (i in 0...array_.length)
 		{
-			if (node_ == array_[i])
+			if (node_ == array_[i].connectedNode)
 			{
 				return i;
 			}
 		}
 		
 		return -1;
-	}*/
+	}
 	
 }

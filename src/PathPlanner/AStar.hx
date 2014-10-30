@@ -39,7 +39,7 @@ class AStar implements IPathfinder
 				
 				var G:Float = currentNode.pathCost;
 				
-				var neighbours:Array<DistanceNode> = currentNode.neighbours;
+				var neighbours:Array<DistanceNode> = currentNode.GetNeighbours();
 				
 				for (i in 0...neighbours.length)
 				{
