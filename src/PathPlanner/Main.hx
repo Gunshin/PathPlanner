@@ -19,12 +19,6 @@ class Main
 		var x:Int = 1;
 		var y:Int = 1;
 		
-		trace("length = " + map[x][y].GetNeighbours().length);
-		/*for (i in 0...map[x][y].neighbours.length)
-		{
-			trace(map[x][y].neighbours[i].connectedNode.x + " _ " + map[x][y].neighbours[i].connectedNode.y);
-		}*/
-		
 		var path:Array<Node> = pathfinder.FindPath(map[0][0], map[14][9], 
 		function(nodeOne, nodeTwo)
 		{
@@ -44,15 +38,11 @@ class Main
 		}
 		
 		var map:Map = new Map(10, 10);
+		var node:Node = map.GetNodeByIndex(0, 0);
 		
-		map.AddNeighbour(map.GetNodeByIndex(0, 0), map.GetNodeByIndex(0, 9));
+		node.AddNeighbour(map.GetNodeByIndex(0, 9));
 		
-		map.RemoveNeighbour(map.GetNodeByIndex(0, 0), map.GetNodeByIndex(0, 9));
-		
-		/*while (true)
-		{
-			
-		}*/
+		node.RemoveNeighbour(map.GetNodeByIndex(0, 9));
 		
 	}
 	
