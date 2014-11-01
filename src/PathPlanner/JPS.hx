@@ -1,20 +1,15 @@
 package pathPlanner;
 
-import de.polygonal.ds.PriorityQueue;
-
 /**
  * ...
  * @author Michael Stephens
- * 
- * A* algorithm as defined by page 70 of Heuristic Search: Theory and Applications by Stefan Edelkamp and Stefan Schrodl. Old version was based on the
- * wikipedia version, which worked just as well, but is not a great source.
  */
-class AStar implements IPathfinder 
+class JPS implements IPathfinder 
 {
 	// cached so that we dont have to pass them through to Improve
 	var heuristicFunction: Node -> Node -> Float;
 	var endNode:Node;
-
+	
 	public function new()
 	{
 		
@@ -106,4 +101,5 @@ class AStar implements IPathfinder
 			open_.enqueue(successorNode_.connectedNode);
 		}
 	}
+	
 }
