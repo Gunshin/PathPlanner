@@ -5,17 +5,26 @@ import de.polygonal.ds.PriorityQueue;
 /**
  * ...
  * @author Michael Stephens
+ * 
+ * A* algorithm as defined by page 70 of Heuristic Search: Theory and Applications by Stefan Edelkamp and Stefan Schrodl. Old version was based on the
+ * wikipedia version, which worked just as well, but is not a great source.
  */
 class AStar implements IPathfinder 
 {
+	
+	var heuristicFunction: Node -> Node -> Float;
+	var endNode:Node;
 
 	public function new()
 	{
 		
 	}
 	
-	public function FindPath(startNode_:Node, endNode_:Node, heuristicFunction: Node -> Node -> Float):Array<Node>
+	public function FindPath(startNode_:Node, endNode_:Node, heuristicFunction_: Node -> Node -> Float):Array<Node>
 	{
+		heuristicFunction = heuristicFunction_;
+		endNode = endNode_;
+		
 		startNode_.parent = null;
 		
 		var open:PriorityQueue<Node> = new PriorityQueue<Node>(true, 128);
@@ -23,68 +32,78 @@ class AStar implements IPathfinder
 		
 		open.enqueue(startNode_);
 		
-		var targetReached:Bool = false;
-		
-		while (!targetReached && !open.isEmpty())
+		while (!open.isEmpty())
 		{
 			var currentNode:Node = open.dequeue();
 			
+			closed.enqueue(currentNode);
+			
+			var neighbours:Array<DistanceNode>;
+			
 			if (currentNode == endNode_)
 			{
-				targetReached = true;
+				return PathUtility.ReconstructPath(endNode_);
 			}
-			else
+			else if((neighbours = currentNode.GetNeighbours()).length > 0)
 			{
-				closed.enqueue(currentNode);
-				
-				var G:Float = currentNode.pathCost;
-				
-				var neighbours:Array<DistanceNode> = currentNode.GetNeighbours();
-				
 				for (i in 0...neighbours.length)
 				{
-					
-					var tempG:Float = G + neighbours[i].distanceBetween;
-					
-					if (neighbours[i].connectedNode.traversable == false)
-					{
-						//dont bother with this node if it is not traversable
-					}
-					else
-					{
-						if (closed.contains(neighbours[i].connectedNode))
-						{
-							// if it is in the closed set, but we have found a better route to this neighbour, update it with the better route.
-							if (tempG < neighbours[i].connectedNode.pathCost)
-							{
-								neighbours[i].connectedNode.parent = currentNode;
-								neighbours[i].connectedNode.pathCost = tempG;
-								neighbours[i].connectedNode.heuristic = heuristicFunction(neighbours[i].connectedNode, endNode_);
-								
-								// since it already exists in the queue, we must call reprioritize. Check http://polygonal.github.io/ds/doc/ for more info
-								closed.reprioritize(neighbours[i].connectedNode, neighbours[i].connectedNode.pathCost + neighbours[i].connectedNode.heuristic);
-							}
-						}
-						else
-						{
-							// if the neighbour is not in the open set, add it.
-							if (!open.contains(neighbours[i].connectedNode))
-							{
-								neighbours[i].connectedNode.parent = currentNode;
-								neighbours[i].connectedNode.pathCost = tempG;
-								neighbours[i].connectedNode.heuristic = heuristicFunction(neighbours[i].connectedNode, endNode_);
-								
-								// since we are adding it to the queue for the first time, we need to set its priority
-								neighbours[i].connectedNode.priority = neighbours[i].connectedNode.pathCost + neighbours[i].connectedNode.heuristic;
-								open.enqueue(neighbours[i].connectedNode);
-							}
-						}
-					}
+					Improve(currentNode, neighbours[i], open, closed);
 				}
 			}
 			
 		}
 		
-		return PathUtility.ReconstructPath(endNode_);
+		return null;// no path is found
+	}
+	
+	// Procedure Improve as listed on page 70 of Heuristic Search: Theory and Applications by Stefan Edelkamp and Stefan Schrodl
+	function Improve(currentNode_:Node, successorNode_:DistanceNode, open_:PriorityQueue<Node>, closed_:PriorityQueue<Node>):Void
+	{
+		
+		if (successorNode_.connectedNode.traversable == false)
+		{
+			return; // ignore any non-traversable nodes
+		}
+		
+		if (open_.contains(successorNode_.connectedNode))
+		{
+			if (currentNode_.pathCost + successorNode_.distanceBetween < successorNode_.connectedNode.pathCost)
+			{
+				successorNode_.connectedNode.parent = currentNode_;
+				successorNode_.connectedNode.pathCost = currentNode_.pathCost + successorNode_.distanceBetween;
+				successorNode_.connectedNode.heuristic = heuristicFunction(successorNode_.connectedNode, endNode); // the heuristic should not change, but under the assumption
+				// that a function may change it, we will forced it to update everytime.
+				
+				// since we are adding it to the queue for the first time, we need to set its priority
+				open_.reprioritize(successorNode_.connectedNode, successorNode_.connectedNode.pathCost + successorNode_.connectedNode.heuristic);
+			}
+		}
+		else if (closed_.contains(successorNode_.connectedNode))
+		{
+			// if it is in the closed set, but we have found a better route to this neighbour, update it with the better route.
+			if (currentNode_.pathCost + successorNode_.distanceBetween < successorNode_.connectedNode.pathCost)
+			{
+				successorNode_.connectedNode.parent = currentNode_;
+				successorNode_.connectedNode.pathCost = currentNode_.pathCost + successorNode_.distanceBetween;
+				successorNode_.connectedNode.heuristic = heuristicFunction(successorNode_.connectedNode, endNode); // the heuristic should not change, but under the assumption
+				// that a function may change it, we will forced it to update everytime.
+				
+				closed_.remove(successorNode_.connectedNode); // remove it from the closed list so it can be explored again to update values
+				successorNode_.connectedNode.priority = successorNode_.connectedNode.pathCost + successorNode_.connectedNode.heuristic;
+				open_.enqueue(successorNode_.connectedNode); // add to open list so we can allow exploration
+			}
+		}
+		else
+		{
+			// if the neighbour is not in the open set, add it.
+			successorNode_.connectedNode.parent = currentNode_;
+			successorNode_.connectedNode.pathCost = currentNode_.pathCost + successorNode_.distanceBetween;
+			successorNode_.connectedNode.heuristic = heuristicFunction(successorNode_.connectedNode, endNode); //set the heuristic for the node
+			
+			// since we are adding it to the queue for the first time, we need to set its priority
+			successorNode_.connectedNode.priority = successorNode_.connectedNode.pathCost + successorNode_.connectedNode.heuristic;
+			open_.enqueue(successorNode_.connectedNode);
+		}
 	}
 }
