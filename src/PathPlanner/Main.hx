@@ -44,6 +44,7 @@ class Main
 		
 		node.RemoveNeighbour(map.GetNodeByIndex(0, 9));
 		
+		while (true){}
 	}
 	
 	function CreateMap(width:Int, height:Int):Void

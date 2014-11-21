@@ -1,5 +1,12 @@
 PathPlanner
 
+*****************
+
+Unfortunately due to a problem with the keyword 'untyped' with hxcs (possibly related to this current bug as of 21/11/2014 https://github.com/HaxeFoundation/haxe/issues/3516) 
+i have to include my own 1 line modification of polygonal-ds so that it compiles to cs. polygonal-ds can be found here: https://github.com/polygonal/ds
+
+*****************
+
 This repo is the start of a collection of algorithms written in haxe so that i can port them to whichever language i need them in.
 
 Currently working algorithms:

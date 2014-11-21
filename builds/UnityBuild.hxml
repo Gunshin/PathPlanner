@@ -1,0 +1,12 @@
+-cs bin/Unity
+-D net-ver=40
+-D no-compilation
+-cp src
+-cp ds/src
+-lib polygonal-printf
+pathPlanner.Node
+pathPlanner.DistanceNode
+pathPlanner.IPathfinder
+pathPlanner.AStar
+pathPlanner.PathUtility
+-cmd "C:\Program Files (x86)\Unity\Editor\Data\Mono\bin\smcs" -target:library -out:bin\Unity\PathPlanner.dll -recurse:bin\Unity\src\*.cs

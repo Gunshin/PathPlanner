@@ -1,0 +1,11 @@
+-cs bin/CS
+-D net-ver=40
+-D dll
+-cp src
+-cp ds/src
+-lib polygonal-printf
+pathPlanner.Node
+pathPlanner.DistanceNode
+pathPlanner.IPathfinder
+pathPlanner.AStar
+pathPlanner.PathUtility
