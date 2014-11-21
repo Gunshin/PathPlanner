@@ -9,4 +9,7 @@ pathPlanner.DistanceNode
 pathPlanner.IPathfinder
 pathPlanner.AStar
 pathPlanner.PathUtility
+pathPlanner.IGraphStructure
+pathPlanner.GraphStructureIndirect
+pathPlanner.Map
 -cmd "C:\Program Files (x86)\Unity\Editor\Data\Mono\bin\smcs" -target:library -out:bin\Unity\PathPlanner.dll -recurse:bin\Unity\src\*.cs

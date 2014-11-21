@@ -9,3 +9,6 @@ pathPlanner.DistanceNode
 pathPlanner.IPathfinder
 pathPlanner.AStar
 pathPlanner.PathUtility
+pathPlannet.IGraphStructure
+pathPlannet.GraphStructureIndirect
+pathPlannet.Map
