@@ -1,26 +1,34 @@
 package pathPlanner;
 
+import de.polygonal.ds.PriorityQueue;
+
+#if cs
+import cs.Lib;
+#end
+
 /**
  * ...
  * @author Michael Stephens
  */
 class JPS implements IPathfinder 
 {
-	// cached so that we dont have to pass them through to Improve
-	var heuristicFunction: Node -> Node -> Float;
-	var endNode:Node;
-	
 	public function new()
 	{
 		
 	}
 	
+	#if cs
+	public function FindPath(startNode_:Node, endNode_:Node, heuristicFunction_:cs.system.Func_3<Node,Node,Float>):Array<Node>
+	#else
 	public function FindPath(startNode_:Node, endNode_:Node, heuristicFunction_: Node -> Node -> Float):Array<Node>
+	#end
 	{
-		heuristicFunction = heuristicFunction_;
-		endNode = endNode_;
+		trace(Type.getClass(startNode_.neighboursStructure));
+		trace(Type.getClassName(GraphStructureIndirect));
+		trace(Type.getClassName(Type.getClass(startNode_.neighboursStructure)) == Type.getClassName(GraphStructureIndirect));
+		return null;
 		
-		startNode_.parent = null;
+		/*startNode_.parent = null;
 		
 		var open:PriorityQueue<Node> = new PriorityQueue<Node>(true, 128);
 		var closed:PriorityQueue<Node> = new PriorityQueue<Node>(true, 128);
@@ -43,31 +51,37 @@ class JPS implements IPathfinder
 			{
 				for (i in 0...neighbours.length)
 				{
-					Improve(currentNode, neighbours[i], open, closed);
+					if (neighbours[i].connectedNode.traversable == true) // if node is traversable, expand it
+					{
+						Improve(currentNode, neighbours[i], endNode_, open, closed, heuristicFunction_);
+					}
+					
 				}
 			}
 			
 		}
 		
-		return null;// no path is found
+		return null;// no path is found*/
 	}
 	
 	// Procedure Improve as listed on page 70 of Heuristic Search: Theory and Applications by Stefan Edelkamp and Stefan Schrodl
-	function Improve(currentNode_:Node, successorNode_:DistanceNode, open_:PriorityQueue<Node>, closed_:PriorityQueue<Node>):Void
+	#if cs
+	function Improve(currentNode_:Node, successorNode_:DistanceNode, endNode_:Node, open_:PriorityQueue<Node>, closed_:PriorityQueue<Node>, heuristicFunction_:cs.system.Func_3<Node,Node,Float>):Void
+	#else
+	function Improve(currentNode_:Node, successorNode_:DistanceNode, endNode_:Node, open_:PriorityQueue<Node>, closed_:PriorityQueue<Node>, heuristicFunction_: Node -> Node -> Float):Void
+	#end
 	{
-		
-		if (successorNode_.connectedNode.traversable == false)
-		{
-			return; // ignore any non-traversable nodes
-		}
-		
 		if (open_.contains(successorNode_.connectedNode))
 		{
 			if (currentNode_.pathCost + successorNode_.distanceBetween < successorNode_.connectedNode.pathCost)
 			{
 				successorNode_.connectedNode.parent = currentNode_;
 				successorNode_.connectedNode.pathCost = currentNode_.pathCost + successorNode_.distanceBetween;
-				successorNode_.connectedNode.heuristic = heuristicFunction(successorNode_.connectedNode, endNode); // the heuristic should not change, but under the assumption
+				#if cs
+				successorNode_.connectedNode.heuristic = heuristicFunction_.Invoke(successorNode_.connectedNode, endNode_);
+				#else
+				successorNode_.connectedNode.heuristic = heuristicFunction_(successorNode_.connectedNode, endNode_); // the heuristic should not change, but under the assumption
+				#end
 				// that a function may change it, we will forced it to update everytime.
 				
 				// since we are adding it to the queue for the first time, we need to set its priority
@@ -81,7 +95,11 @@ class JPS implements IPathfinder
 			{
 				successorNode_.connectedNode.parent = currentNode_;
 				successorNode_.connectedNode.pathCost = currentNode_.pathCost + successorNode_.distanceBetween;
-				successorNode_.connectedNode.heuristic = heuristicFunction(successorNode_.connectedNode, endNode); // the heuristic should not change, but under the assumption
+				#if cs
+				successorNode_.connectedNode.heuristic = heuristicFunction_.Invoke(successorNode_.connectedNode, endNode_);
+				#else
+				successorNode_.connectedNode.heuristic = heuristicFunction_(successorNode_.connectedNode, endNode_); // the heuristic should not change, but under the assumption
+				#end
 				// that a function may change it, we will forced it to update everytime.
 				
 				closed_.remove(successorNode_.connectedNode); // remove it from the closed list so it can be explored again to update values
@@ -94,7 +112,11 @@ class JPS implements IPathfinder
 			// if the neighbour is not in the open set, add it.
 			successorNode_.connectedNode.parent = currentNode_;
 			successorNode_.connectedNode.pathCost = currentNode_.pathCost + successorNode_.distanceBetween;
-			successorNode_.connectedNode.heuristic = heuristicFunction(successorNode_.connectedNode, endNode); //set the heuristic for the node
+			#if cs
+			successorNode_.connectedNode.heuristic = heuristicFunction_.Invoke(successorNode_.connectedNode, endNode_);
+			#else
+			successorNode_.connectedNode.heuristic = heuristicFunction_(successorNode_.connectedNode, endNode_); // set the heuristic for the node
+			#end
 			
 			// since we are adding it to the queue for the first time, we need to set its priority
 			successorNode_.connectedNode.priority = successorNode_.connectedNode.pathCost + successorNode_.connectedNode.heuristic;

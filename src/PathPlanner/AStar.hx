@@ -25,7 +25,7 @@ class AStar implements IPathfinder
 	#else
 	public function FindPath(startNode_:Node, endNode_:Node, heuristicFunction_: Node -> Node -> Float):Array<Node>
 	#end
-	{		
+	{
 		startNode_.parent = null;
 		
 		var open:PriorityQueue<Node> = new PriorityQueue<Node>(true, 128);

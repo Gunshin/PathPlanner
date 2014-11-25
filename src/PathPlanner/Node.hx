@@ -20,9 +20,9 @@ extends HashableItem
 	public var x(get, null):Float;
 	public var y(get, null):Float;
 	
-	var neighboursStructure:IGraphStructure;
+	public var neighboursStructure(get, null):IGraphStructure;
 	
-	@:isVar public  var traversable(get, set):Bool;
+	@:isVar public var traversable(get, set):Bool;
 	
 	public var heuristic:Float = 0;
 	@:isVar public var pathCost(get, set):Float = 0;
@@ -95,6 +95,11 @@ extends HashableItem
 	function set_parent(parent_:Node):Node
 	{
 		return parent = parent_;
+	}
+	
+	function get_neighboursStructure():IGraphStructure
+	{
+		return neighboursStructure;
 	}
 	
 }

@@ -9,10 +9,13 @@ class Main
 
 	var map:Array<Array<Node>>;
 	
-	public function new() 
+	public function new()
 	{
 		
 		var pathfinder:IPathfinder = new AStar();
+		var jps:IPathfinder = new JPS();
+		
+		//trace(Type.typeof(pathfinder));
 		
 		CreateMap(32, 32);
 		
@@ -22,13 +25,14 @@ class Main
 		var path:Array<Node> = pathfinder.FindPath(map[0][0], map[14][9], 
 		function(nodeOne, nodeTwo)
 		{
-			/*
-			 * very slightly overestimate so that we get the most direct looking path.
-			 * due to certain paths giving the exact same cost, the nodes which are added first are selected first resulting in a slightly odd looking path.
-			 * 
-			 * Need to visualise it fully, still looks problematic
-			 */
-			return 1.01 * Math.sqrt(Math.pow(nodeOne.x - nodeTwo.x, 2) + Math.pow(nodeOne.y - nodeTwo.y, 2));
+			return Math.sqrt(Math.pow(nodeOne.x - nodeTwo.x, 2) + Math.pow(nodeOne.y - nodeTwo.y, 2));
+		}
+		);
+		
+		var stupid:Array<Node> = jps.FindPath(map[0][0], map[14][9], 
+		function(nodeOne, nodeTwo)
+		{
+			return Math.sqrt(Math.pow(nodeOne.x - nodeTwo.x, 2) + Math.pow(nodeOne.y - nodeTwo.y, 2));
 		}
 		);
 		
