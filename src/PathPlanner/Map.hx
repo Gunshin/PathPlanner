@@ -180,6 +180,22 @@ class Map implements IGraphStructure
 		return x_ >= 0 && y_ >= 0 && x_ < width && y_ < height ? map[x_][y_] : null;
 	}
 	
+	/*
+	 * Only in use temporarily as i need to split the public interface for nodes from the pathplanner specific needs.
+	 */
+	public function ResetForPathplanning():Void
+	{
+		for (i in 0...width)
+		{
+			for (j in 0...height)
+			{
+				map[i][j].parent = null;
+				map[i][j].pathCost = 0;
+				map[i][j].heuristic = 0;
+			}
+		}
+	}
+	
 	function get_width():Int
 	{
 		return width;
