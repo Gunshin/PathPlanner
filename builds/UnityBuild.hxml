@@ -8,6 +8,7 @@ pathPlanner.Node
 pathPlanner.DistanceNode
 pathPlanner.IPathfinder
 pathPlanner.AStar
+pathPlanner.JPS
 pathPlanner.PathUtility
 pathPlanner.IGraphStructure
 pathPlanner.GraphStructureIndirect

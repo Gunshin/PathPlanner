@@ -82,7 +82,11 @@ class JPS implements IPathfinder
 					for (point in result.jumpPoints)
 					{
 						// for now
+						#if cs
+						point.heuristic = heuristicFunction_.Invoke(point, endNode);
+						#else
 						point.heuristic = heuristicFunction_(point, endNode);
+						#end
 						point.priority = point.heuristic;
 						
 						open_.enqueue(point);
