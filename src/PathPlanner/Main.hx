@@ -15,39 +15,48 @@ class Main
 		var pathfinder:IPathfinder = new AStar();
 		var jps:IPathfinder = new JPS();
 		
-		//trace(Type.typeof(pathfinder));
+		trace("init pathplanners");
 		
-		CreateMap(32, 32);
+		//CreateMap(32, 32);
+		var map:Map = new Map(16, 16, 1, 1);
+		var sNode:Node = map.GetNodeByIndex(0, 0);
+		var eNode:Node = map.GetNodeByIndex(14, 9);
+		
+		trace("createdMap");
 		
 		var x:Int = 1;
 		var y:Int = 1;
 		
-		var path:Array<Node> = pathfinder.FindPath(map[0][0], map[14][9], 
+		var path:Array<Node> = pathfinder.FindPath(sNode, eNode, 
 		function(nodeOne, nodeTwo)
 		{
 			return Math.sqrt(Math.pow(nodeOne.x - nodeTwo.x, 2) + Math.pow(nodeOne.y - nodeTwo.y, 2));
 		}
 		);
 		
-		var stupid:Array<Node> = jps.FindPath(map[0][0], map[14][9], 
-		function(nodeOne, nodeTwo)
-		{
-			return Math.sqrt(Math.pow(nodeOne.x - nodeTwo.x, 2) + Math.pow(nodeOne.y - nodeTwo.y, 2));
-		}
-		);
-		
+		trace("A*");
 		for (i in 0...path.length)
 		{
 			trace(path[i].x + " _ " + path[i].y);
 		}
 		
-		var map:Map = new Map(10, 10);
-		var node:Node = map.GetNodeByIndex(0, 0);
+		trace("A* completed");
 		
-		node.AddNeighbour(map.GetNodeByIndex(0, 9));
+		var jpsPath:Array<Node> = jps.FindPath(sNode, eNode, 
+		function(nodeOne, nodeTwo)
+		{
+			return Math.sqrt(Math.pow(nodeOne.x - nodeTwo.x, 2) + Math.pow(nodeOne.y - nodeTwo.y, 2));
+		}
+		);
 		
-		node.RemoveNeighbour(map.GetNodeByIndex(0, 9));
+		trace("JPS " + (jpsPath != null));
+		/*for (i in 0...jpsPath.length)
+		{
+			trace(jpsPath[i].x + " _ " + jpsPath[i].y);
+		}*/
 		
+		
+
 		while (true){}
 	}
 	

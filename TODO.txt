@@ -1,0 +1,5 @@
+correct node implementation
+
+JPS:
+currently ignoring path cost and only selecting nodes to expand based on heuristic
+could potentially try adding the neighbours of the expanding node to the open list, and then select the neighbour which is closest to expand first so we expand in the correct direction.

@@ -35,8 +35,8 @@ class AStar implements IPathfinder
 		
 		while (!open.isEmpty())
 		{
-			var currentNode:Node = open.dequeue();
 			
+			var currentNode:Node = open.dequeue();
 			closed.enqueue(currentNode);
 			
 			var neighbours:Array<DistanceNode>;
@@ -49,7 +49,7 @@ class AStar implements IPathfinder
 			{
 				for (i in 0...neighbours.length)
 				{
-					if (neighbours[i].connectedNode.traversable == true) // if node is traversable, expand it
+					if (neighbours[i] != null && neighbours[i].connectedNode.traversable == true) // if node is traversable, expand it
 					{
 						Improve(currentNode, neighbours[i], endNode_, open, closed, heuristicFunction_);
 					}

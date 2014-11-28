@@ -19,15 +19,19 @@ class Map implements IGraphStructure
 {
 	public var width(get, null):Int = 0;
 	public var height(get, null):Int = 0;
+	public var nodeWidth(get, null):Int = 0;
+	public var nodeHeight(get, null):Int = 0;
 	
 	var map:Array<Array<Node>>;
 	
 	var neighbourHashTable:HashTable < Node, Array<DistanceNode> > ;
 	
-	public function new(width_:Int, height_:Int) 
+	public function new(width_:Int, height_:Int, nodeWidth_:Int, nodeHeight_:Int) 
 	{
 		width = width_;
 		height = height_;
+		nodeWidth = nodeWidth_;
+		nodeHeight = nodeHeight_;
 		
 		neighbourHashTable = new HashTable < Node, Array<DistanceNode> > (4, 32);
 		
@@ -38,31 +42,7 @@ class Map implements IGraphStructure
 			map[i] = new Array<Node>();
 			for (j in 0...height)
 			{
-				map[i][j] = new Node(i, j, true, new GraphStructureIndirect());
-			}
-		}
-		
-		for (i in 0...height)
-		{
-			for (j in 0...width)
-			{
-				
-				for (a in -1...2)
-				{
-					for (b in -1...2)
-					{
-						
-						if (!(a == 0 && b == 0))
-						{
-							var neighbourX:Int = i + a;
-							var neighbourY:Int = j + b;
-							
-							if(neighbourX >= 0 && neighbourX < width && neighbourY >= 0 && neighbourY < height)
-								map[i][j].AddNeighbour(map[neighbourX][neighbourY]);
-						}
-					}
-				}
-				
+				map[i][j] = new Node(i * nodeWidth, j * nodeWidth, true, this);
 			}
 		}
 	}
@@ -123,26 +103,28 @@ class Map implements IGraphStructure
 	 */
 	public function GetDirectNeighbours(node_:Node):Array<DistanceNode>
 	{
-		var x:Int = cast(node_.x, Int);
-		var y:Int = cast(node_.y, Int);
-		
-		var neighbours:Array<DistanceNode> = null;
-		
+		var nodeIndex = GetIndexOfNode(node_);
 		// make sure that node is a part of the map
-		if (node_ == map[x][y])
+		if (!nodeIndex.contained)
 		{
-			neighbours = new Array<DistanceNode>();
-			// do it backwards since i can only assume that the arrays resize based on illegal/overflow access
-			// i have the feeling that whoever made the Array resize, does not resize by +1 each time, but im not going to take the risk.
-			neighbours[7] = x > 0 ? 							new DistanceNode(map[x - 1][y], node_) : null; 	// mid left
-			neighbours[6] = x > 0 && y > 0 ? 					new DistanceNode(map[x - 1][y - 1], node_) : null; // bottom left
-			neighbours[5] = y > 0 ? 							new DistanceNode(map[x][y - 1], node_) : null; 	// bottom mid
-			neighbours[4] = x < width - 1 && y > 0 ? 			new DistanceNode(map[x + 1][y - 1], node_) : null; // bottom right
-			neighbours[3] = x < width - 1 ? 					new DistanceNode(map[x + 1][y], node_) : null; 	// mid right
-			neighbours[2] = x < width - 1 && y < height - 1 ? 	new DistanceNode(map[x + 1][y + 1], node_) : null; // top right
-			neighbours[1] = y < height - 1 ? 					new DistanceNode(map[x][y + 1], node_) : null; 	// top mid
-			neighbours[0] = x > 0 && y < height - 1 ? 			new DistanceNode(map[x - 1][y + 1], node_) : null; // top left
+			return null;
 		}
+		
+		var x:Int = nodeIndex.index.x;
+		var y:Int = nodeIndex.index.y;
+		
+		var neighbours:Array<DistanceNode> = new Array<DistanceNode>();
+		
+		// do it backwards since i can only assume that the arrays resize based on illegal/overflow access
+		// i have the feeling that whoever made the Array resize, does not resize by +1 each time, but im not going to take the risk.
+		neighbours[7] = x > 0 ? 							new DistanceNode(map[x - 1][y], node_) : null; 	// mid left
+		neighbours[6] = x > 0 && y > 0 ? 					new DistanceNode(map[x - 1][y - 1], node_) : null; // bottom left
+		neighbours[5] = y > 0 ? 							new DistanceNode(map[x][y - 1], node_) : null; 	// bottom mid
+		neighbours[4] = x < width - 1 && y > 0 ? 			new DistanceNode(map[x + 1][y - 1], node_) : null; // bottom right
+		neighbours[3] = x < width - 1 ? 					new DistanceNode(map[x + 1][y], node_) : null; 	// mid right
+		neighbours[2] = x < width - 1 && y < height - 1 ? 	new DistanceNode(map[x + 1][y + 1], node_) : null; // top right
+		neighbours[1] = y < height - 1 ? 					new DistanceNode(map[x][y + 1], node_) : null; 	// top mid
+		neighbours[0] = x > 0 && y < height - 1 ? 			new DistanceNode(map[x - 1][y + 1], node_) : null; // top left
 		
 		return neighbours;
 	}
@@ -167,17 +149,56 @@ class Map implements IGraphStructure
 	{
 		var directNeighbours:Array<DistanceNode> = GetDirectNeighbours(node_);
 		var indirectNeighbours:Array<DistanceNode> = GetIndirectNeighbours(node_);
-		if (directNeighbours != null)
+		if ((directNeighbours != null) && (indirectNeighbours != null))
 		{
 			return directNeighbours.concat(indirectNeighbours);
+		}
+		else if (directNeighbours != null)
+		{
+			return directNeighbours;
 		}
 		
 		return null;
 	}
 	
+	public function GetRawNeighbours(node_:Node):Array<Node>
+	{
+		var nodeIndex = GetIndexOfNode(node_);
+		// make sure that node is a part of the map
+		if (!nodeIndex.contained)
+		{
+			return null;
+		}
+		
+		var x:Int = nodeIndex.index.x;
+		var y:Int = nodeIndex.index.y;
+		
+		var neighbours:Array<Node> = new Array<Node>();
+		
+		// do it backwards since i can only assume that the arrays resize based on illegal/overflow access
+		// i have the feeling that whoever made the Array resize, does not resize by +1 each time, but im not going to take the risk.
+		neighbours[7] = x > 0 ? 							map[x - 1][y] 		: null; // mid left
+		neighbours[6] = x > 0 && y > 0 ? 					map[x - 1][y - 1] 	: null; // bottom left
+		neighbours[5] = y > 0 ? 							map[x][y - 1] 		: null; // bottom mid
+		neighbours[4] = x < width - 1 && y > 0 ? 			map[x + 1][y - 1] 	: null; // bottom right
+		neighbours[3] = x < width - 1 ? 					map[x + 1][y] 		: null; // mid right
+		neighbours[2] = x < width - 1 && y < height - 1 ? 	map[x + 1][y + 1] 	: null; // top right
+		neighbours[1] = y < height - 1 ? 					map[x][y + 1] 		: null; // top mid
+		neighbours[0] = x > 0 && y < height - 1 ? 			map[x - 1][y + 1] 	: null; // top left
+		
+		return neighbours;
+	}
+	
 	public function GetNodeByIndex(x_:Int, y_:Int):Node
 	{
 		return x_ >= 0 && y_ >= 0 && x_ < width && y_ < height ? map[x_][y_] : null;
+	}
+	
+	public function GetIndexOfNode(node_:Node)
+	{
+		var indexX:Int = cast(node_.x / nodeWidth, Int);
+		var indexY:Int = cast(node_.y / nodeHeight, Int);
+		return { contained: map[indexX][indexY] == node_, index: { x: indexX, y: indexY }};
 	}
 	
 	/*
@@ -204,6 +225,16 @@ class Map implements IGraphStructure
 	function get_height():Int
 	{
 		return height;
+	}
+	
+	function get_nodeWidth():Int
+	{
+		return nodeWidth;
+	}
+	
+	function get_nodeHeight():Int
+	{
+		return nodeHeight;
 	}
 	
 }
