@@ -19,6 +19,10 @@ class Main
 		
 		//CreateMap(32, 32);
 		var map:Map = new Map(16, 16, 1, 1);
+		
+		var node:Node = map.GetNodeByIndex(3, 3);
+		node.traversable = false;
+		
 		var sNode:Node = map.GetNodeByIndex(0, 0);
 		var eNode:Node = map.GetNodeByIndex(14, 9);
 		
@@ -50,10 +54,10 @@ class Main
 		);
 		
 		trace("JPS " + (jpsPath != null));
-		/*for (i in 0...jpsPath.length)
+		for (i in 0...jpsPath.length)
 		{
 			trace(jpsPath[i].x + " _ " + jpsPath[i].y);
-		}*/
+		}
 		
 		
 

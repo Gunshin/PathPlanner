@@ -85,7 +85,6 @@ class JPS implements IPathfinder
 						point.heuristic = heuristicFunction_(point, endNode);
 						point.priority = point.heuristic;
 						
-						trace("found jump point at = " + point.x + " _ " + point.y);
 						open_.enqueue(point);
 					}
 				}
@@ -104,14 +103,11 @@ class JPS implements IPathfinder
 		var dx:Int = cast(Math.min(Math.max((x - indexResultParentNode.index.x), -1), 1), Int);
 		var dy:Int = cast(Math.min(Math.max((y - indexResultParentNode.index.y), -1), 1), Int);
 		
-		trace("jumping on " + x + " _ " + y + " with direction " + dx + " _ " + dy);
-		
 		if (dx != 0 && dy != 0) // check diag first since we apply a horizontal and vertical search on the node inside JumpDiagonal anyways (dont need to do it twice)
 		{
 			var result = JumpDiagonal(x, y, dx, dy, length_);
 			if (result.found)
 			{
-				trace("diag found");
 				return result;
 			}
 		}
@@ -120,7 +116,6 @@ class JPS implements IPathfinder
 			var result = JumpHorizontal(x, y, dx, length_);
 			if (result.found)
 			{
-				trace("horiz found");
 				return result;
 			}
 		}else if (dy != 0)
@@ -128,12 +123,10 @@ class JPS implements IPathfinder
 			var result = JumpVertical(x, y, dy, length_);
 			if (result.found)
 			{
-				trace("vert found");
 				return result;
 			}
 		}
 		
-		trace("nothing found");
 		return {found: false, jumpPoints: null};
 	}
 	
@@ -149,8 +142,6 @@ class JPS implements IPathfinder
 		var incrementAmount:Int = cast(Math.abs(endTile - x_), Int);
 		var currentX:Int = x_;
 		
-		trace("endtile = " + endTile + "inc amount = " + incrementAmount);
-		
 		for (i in 0...incrementAmount)
 		{
 			var currentNode:Node = map.GetNodeByIndex(currentX, y_);
@@ -159,7 +150,6 @@ class JPS implements IPathfinder
 			if (!currentNode.traversable || currentNode.parent != null)
 			{
 				// we hit a dead end
-				trace("running deadend " + currentX + " _ " + y_ + " trav = " + currentNode.traversable + " _ " + (currentNode.parent != null));
 				return {found: false, jumpPoints: null};
 			}
 			
@@ -173,7 +163,6 @@ class JPS implements IPathfinder
 				return {found: true, jumpPoints: [currentNode]};
 			}
 			
-			trace("horiz " + currentX + " _ " + y_);
 			currentX += dx_;
 		}
 	
@@ -237,7 +226,6 @@ class JPS implements IPathfinder
 		var currentX:Int = x_;
 		var currentY:Int = y_;
 		
-		trace("jumping diagonal at " + currentX + " _ " + currentY + " with " + dx_ + " _ " + dy_ + " inc amount " + incrementAmount);
 		for (i in 0...incrementAmount)
 		{
 			var currentNode:Node = map.GetNodeByIndex(currentX, currentY);
