@@ -10,6 +10,7 @@ pathPlanner.IPathfinder
 pathPlanner.AStar
 pathPlanner.JPS
 pathPlanner.PathUtility
+pathPlanner.DebugLogger
 pathPlanner.IGraphStructure
 pathPlanner.GraphStructureIndirect
 pathPlanner.Map

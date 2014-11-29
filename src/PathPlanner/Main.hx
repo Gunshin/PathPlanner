@@ -9,8 +9,18 @@ class Main
 
 	var map:Array<Array<Node>>;
 	
+	#if debug
+	function Print(message_:String)
+	{
+		trace(message_);
+	}
+	#end
+	
 	public function new()
 	{
+		#if debug
+		DebugLogger.instance.loggingFunction = Print;
+		#end
 		
 		var pathfinder:IPathfinder = new AStar();
 		var jps:IPathfinder = new JPS();
@@ -59,9 +69,7 @@ class Main
 			trace(jpsPath[i].x + " _ " + jpsPath[i].y);
 		}
 		
-		
-
-		while (true){}
+		while (true) {}
 	}
 	
 	function CreateMap(width:Int, height:Int):Void

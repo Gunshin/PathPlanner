@@ -20,7 +20,7 @@ extends HashableItem
 	public var x(get, null):Float;
 	public var y(get, null):Float;
 	
-	public var neighboursStructure(get, null):IGraphStructure;
+	@:isVar public var neighboursStructure(get, set):IGraphStructure;
 	
 	@:isVar public var traversable(get, set):Bool;
 	
@@ -40,6 +40,7 @@ extends HashableItem
 		traversable = traversable_;
 		
 		neighboursStructure = neighboursStructure_;
+		
 	}
 	
 	public function GetNeighbours():Array<DistanceNode>
@@ -100,6 +101,11 @@ extends HashableItem
 	function get_neighboursStructure():IGraphStructure
 	{
 		return neighboursStructure;
+	}
+	
+	function set_neighboursStructure(structure_:IGraphStructure):IGraphStructure
+	{
+		return neighboursStructure = structure_;
 	}
 	
 }

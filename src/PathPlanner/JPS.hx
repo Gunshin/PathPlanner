@@ -15,6 +15,10 @@ class JPS implements IPathfinder
 	
 	var map:Map;
 	var endNode:Node;
+	
+	#if debug
+	var logger:DebugLogger;
+	#end
 		
 	public function new()
 	{
@@ -150,6 +154,10 @@ class JPS implements IPathfinder
 		{
 			var currentNode:Node = map.GetNodeByIndex(currentX, y_);
 			
+			#if debug
+			DebugLogger.instance.Print("JumpHorizontal: on node: " + currentX + " _ " + y_  + " with direction x: " + dx_ + " and the node is !null: " + (currentNode != null));
+			#end
+			
 			//check to see if current node is traversable
 			if (!currentNode.traversable || currentNode.parent != null)
 			{
@@ -188,6 +196,10 @@ class JPS implements IPathfinder
 		for (i in 0...incrementAmount)
 		{
 			var currentNode:Node = map.GetNodeByIndex(x_, currentY);
+			
+			#if debug
+			DebugLogger.instance.Print("JumpVertical: on node: " + x_ + " _ " + currentY  + " with direction y: " + dy_ + " and the node is !null: " + (currentNode != null));
+			#end
 			
 			//check to see if current node is traversable
 			if (!currentNode.traversable || currentNode.parent != null)
@@ -233,6 +245,10 @@ class JPS implements IPathfinder
 		for (i in 0...incrementAmount)
 		{
 			var currentNode:Node = map.GetNodeByIndex(currentX, currentY);
+			#if debug
+			DebugLogger.instance.Print("JumpDiagonal: on node: " + currentX + " _ " + currentY  + " with direction: " + dx_ + " _ " + dy_ + " and the node is !null: " + (currentNode != null));
+			#end
+			
 			//check to see if current node is traversable
 			if (!currentNode.traversable || currentNode.parent != null)
 			{
