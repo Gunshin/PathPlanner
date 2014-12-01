@@ -18,7 +18,7 @@ class Main
 	
 	public function new()
 	{
-		#if debug
+		#if debugging
 		DebugLogger.instance.loggingFunction = Print;
 		#end
 		

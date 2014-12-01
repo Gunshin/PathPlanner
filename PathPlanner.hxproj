@@ -24,7 +24,7 @@
     <option noInlineOnDebug="False" />
     <option mainClass="pathPlanner.Main" />
     <option enabledebug="False" />
-    <option additional="-lib polygonal-ds" />
+    <option additional="-lib polygonal-ds&#xA;-D debugging" />
   </build>
   <!-- haxelib libraries -->
   <haxelib>

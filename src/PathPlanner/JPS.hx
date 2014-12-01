@@ -61,6 +61,10 @@ class JPS implements IPathfinder
 			
 			closed.enqueue(currentNode);
 			
+			#if debugging
+			DebugLogger.instance.closedSet.push(currentNode);
+			#end
+			
 			Improve(currentNode, open, heuristicFunction_);
 		}
 		
@@ -74,6 +78,10 @@ class JPS implements IPathfinder
 	function Improve(currentNode_:Node, open_:PriorityQueue<Node>, heuristicFunction_: Node -> Node -> Float):Void
 	#end
 	{
+		
+		#if debugging
+		DebugLogger.instance.expandedSet.push(currentNode_);
+		#end
 		
 		var neighbours:Array<Node> = map.GetRawNeighbours(currentNode_);
 		for (i in 0...neighbours.length)
@@ -91,9 +99,13 @@ class JPS implements IPathfinder
 						#else
 						point.heuristic = heuristicFunction_(point, endNode);
 						#end
-						point.priority = point.heuristic;
+						point.priority = point.pathCost + point.heuristic;
 						
 						open_.enqueue(point);
+						
+						#if debugging
+						DebugLogger.instance.openSet.push(point);
+						#end
 					}
 				}
 			}
@@ -140,6 +152,11 @@ class JPS implements IPathfinder
 	
 	function JumpHorizontal(x_:Int, y_:Int, dx_:Int, length_:Int)
 	{
+		if (x_ < 0 || x_ >= map.width)
+		{
+			return {found: false, jumpPoints: null};
+		}
+		
 		//var endTile_:Int = x_ + (length_ * dx_);
 		/*
 		 * for now im going to make it simple and just have it search as far as possible
@@ -150,11 +167,15 @@ class JPS implements IPathfinder
 		var incrementAmount:Int = cast(Math.abs(endTile - x_), Int);
 		var currentX:Int = x_;
 		
+		#if debugging
+		DebugLogger.instance.Print("JumpHorizontal: on x: " + currentX + " with increment amount: " + incrementAmount);
+		#end
+		
 		for (i in 0...incrementAmount)
 		{
 			var currentNode:Node = map.GetNodeByIndex(currentX, y_);
 			
-			#if debug
+			#if debugging
 			DebugLogger.instance.Print("JumpHorizontal: on node: " + currentX + " _ " + y_  + " with direction x: " + dx_ + " and the node is !null: " + (currentNode != null));
 			#end
 			
@@ -166,6 +187,7 @@ class JPS implements IPathfinder
 			}
 			
 			currentNode.parent = map.GetNodeByIndex(currentX - dx_, y_); // set parent so we know we traversed it
+			currentNode.pathCost = currentNode.parent.pathCost + 1;
 			
 			// check to see if the current node has a forced neighbour, or is the end node
 			if ((currentNode == endNode) ||
@@ -183,6 +205,11 @@ class JPS implements IPathfinder
 	
 	function JumpVertical(x_:Int, y_:Int, dy_:Int, length_:Int)
 	{
+		if (y_ < 0 || y_ >= map.height)
+		{
+			return {found: false, jumpPoints: null};
+		}
+		
 		//var endTile_:Int = x_ + (length_ * dx_);
 		/*
 		 * for now im going to make it simple and just have it search as far as possible
@@ -193,11 +220,15 @@ class JPS implements IPathfinder
 		var incrementAmount:Int = cast(Math.abs(endTile - y_), Int);
 		var currentY:Int = y_;
 		
+		#if debugging
+		DebugLogger.instance.Print("JumpVertical: on y: " + currentY + " with increment amount: " + incrementAmount);
+		#end
+		
 		for (i in 0...incrementAmount)
 		{
 			var currentNode:Node = map.GetNodeByIndex(x_, currentY);
 			
-			#if debug
+			#if debugging
 			DebugLogger.instance.Print("JumpVertical: on node: " + x_ + " _ " + currentY  + " with direction y: " + dy_ + " and the node is !null: " + (currentNode != null));
 			#end
 			
@@ -209,6 +240,7 @@ class JPS implements IPathfinder
 			}
 			
 			currentNode.parent = map.GetNodeByIndex(x_, currentY - dy_); // set parent so we know we traversed it
+			currentNode.pathCost = currentNode.parent.pathCost + 1;
 			
 			// check to see if the current node has a forced neighbour
 			if ((currentNode == endNode) ||
@@ -226,6 +258,10 @@ class JPS implements IPathfinder
 	
 	function JumpDiagonal(x_:Int, y_:Int, dx_:Int, dy_:Int, length_:Int)
 	{
+		if (y_ < 0 || y_ >= map.height || x_ < 0 || x_ >= map.width)
+		{
+			return {found: false, jumpPoints: null};
+		}
 		
 		//var endTile_:Int = x_ + (length_ * dx_);
 		/*
@@ -242,10 +278,14 @@ class JPS implements IPathfinder
 		var currentX:Int = x_;
 		var currentY:Int = y_;
 		
+		#if debugging
+		DebugLogger.instance.Print("JumpDiagonal: on x, y: " + currentX + " _ " + currentY + " with increment amount: " + incrementAmount);
+		#end
+		
 		for (i in 0...incrementAmount)
 		{
 			var currentNode:Node = map.GetNodeByIndex(currentX, currentY);
-			#if debug
+			#if debugging
 			DebugLogger.instance.Print("JumpDiagonal: on node: " + currentX + " _ " + currentY  + " with direction: " + dx_ + " _ " + dy_ + " and the node is !null: " + (currentNode != null));
 			#end
 			
@@ -257,6 +297,7 @@ class JPS implements IPathfinder
 			}
 			
 			currentNode.parent = map.GetNodeByIndex(currentX - dx_, currentY - dy_); // set parent so we know we traversed it
+			currentNode.pathCost = currentNode.parent.pathCost + 1.4;
 			
 			//check horizontal + vertical directions
 			var horizontal = JumpHorizontal(currentX + dx_, currentY, dx_, length_);

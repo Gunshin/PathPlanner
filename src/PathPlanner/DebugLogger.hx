@@ -12,6 +12,10 @@ class DebugLogger
 {
 	public static var instance(get, null):DebugLogger;
 	
+	public var expandedSet:Array<Node> = new Array<Node>();
+	public var openSet:Array<Node> = new Array<Node>();
+	public var closedSet:Array<Node> = new Array<Node>();
+	
 	#if cs
 	@:isVar public var loggingFunction(get, set):cs.system.Action_1<String>;
 	#else
@@ -25,6 +29,7 @@ class DebugLogger
 	
 	public function Print(message_:String)
 	{
+		if(loggingFunction != null)
 		#if cs
 		loggingFunction.Invoke(message_);
 		#else
