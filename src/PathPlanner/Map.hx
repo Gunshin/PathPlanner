@@ -211,6 +211,7 @@ class Map implements IGraphStructure
 			for (j in 0...height)
 			{
 				map[i][j].parent = null;
+				map[i][j].searched = false;
 				map[i][j].pathCost = 0;
 				map[i][j].heuristic = 0;
 			}

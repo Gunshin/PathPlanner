@@ -17,6 +17,9 @@ extends HashableItem
 	public var priority:Float = 0;
 	//
 	
+	//TODO: fix this damn class
+	public var searched:Bool = false;
+	
 	public var x(get, null):Float;
 	public var y(get, null):Float;
 	

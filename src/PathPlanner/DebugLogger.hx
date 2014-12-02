@@ -37,14 +37,21 @@ class DebugLogger
 		#end
 	}
 	
+	public static function Assert(flag_:Bool, message_:String)
+	{
+		if (flag_)
+		{
+			instance.Print(message_);
+			throw message_;
+		}
+	}
+	
 	public static function get_instance():DebugLogger
 	{
 		if (instance == null)
 		{
 			instance = new DebugLogger();
 		}
-		
-		trace("ran get_instance()");
 		
 		return instance;
 	}

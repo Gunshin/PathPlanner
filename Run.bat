@@ -1,3 +1,3 @@
 @echo off
-bin\Main-debug.exe
+bin\cpp\Main-debug.exe
 pause

@@ -4,7 +4,7 @@
   <output>
     <movie outputType="Application" />
     <movie input="" />
-    <movie path="bin" />
+    <movie path="bin/cpp" />
     <movie fps="0" />
     <movie width="0" />
     <movie height="0" />
@@ -22,7 +22,7 @@
     <option directives="" />
     <option flashStrict="False" />
     <option noInlineOnDebug="False" />
-    <option mainClass="pathPlanner.Main" />
+    <option mainClass="pathPlanner.test.Main" />
     <option enabledebug="False" />
     <option additional="-lib polygonal-ds&#xA;-D debugging" />
   </build>
@@ -33,6 +33,7 @@
   <!-- Class files to compile (other referenced classes will automatically be included) -->
   <compileTargets>
     <compile path="src\PathPlanner\Main.hx" />
+    <compile path="src\pathPlanner\test\Main.hx" />
   </compileTargets>
   <!-- Paths to exclude from the Project Explorer tree -->
   <hiddenPaths>
