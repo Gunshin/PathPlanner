@@ -6,6 +6,8 @@ import de.polygonal.ds.PriorityQueue;
 import cs.Lib;
 #end
 
+typedef JumpResult = { found:Bool, jumpPoint:Node }
+
 /**
  * ...
  * @author Michael Stephens
@@ -102,29 +104,27 @@ class JPS implements IPathfinder
 				var result = Jump(neighbours[i], currentNode_, 0);
 				if (result.found)
 				{
-					for (point in result.jumpPoints)
-					{
-						// for now
-						#if cs
-						point.heuristic = heuristicFunction_.Invoke(point, endNode);
-						#else
-						point.heuristic = heuristicFunction_(point, endNode);
-						#end
-						point.priority = point.GetPathCost() + point.heuristic;
-						
-						open_.enqueue(point);
-						
-						#if debugging
-						DebugLogger.GetInstance().openSet.push(point);
-						#end
-					}
+					// for now
+					#if cs
+					result.jumpPoint.heuristic = heuristicFunction_.Invoke(result.jumpPoint, endNode);
+					#else
+					result.jumpPoint.heuristic = heuristicFunction_(result.jumpPoint, endNode);
+					#end
+					result.jumpPoint.priority = result.jumpPoint.GetPathCost() + result.jumpPoint.heuristic;
+					
+					open_.enqueue(result.jumpPoint);
+					
+					#if debugging
+					DebugLogger.GetInstance().openSet.push(result.jumpPoint);
+					#end
+					
 				}
 			}
 		}
 		
 	}
 	
-	function Jump(node_:Node, parentNode_:Node, length_:Int)
+	function Jump(node_:Node, parentNode_:Node, length_:Int):JumpResult
 	{
 		#if debugging
 		DebugLogger.Assert(node_ == null, "JPS:Jump: node_ is null");
@@ -149,28 +149,28 @@ class JPS implements IPathfinder
 		}
 		else if (dx != 0)
 		{
-			var result = JumpHorizontal(x, y, dx, length_);
+			var result = JumpHorizontal(x, y, dx, length_, true);
 			if (result.found)
 			{
 				return result;
 			}
 		}else if (dy != 0)
 		{
-			var result = JumpVertical(x, y, dy, length_);
+			var result = JumpVertical(x, y, dy, length_, true);
 			if (result.found)
 			{
 				return result;
 			}
 		}
 		
-		return {found: false, jumpPoints: null};
+		return {found: false, jumpPoint: null};
 	}
 	
-	function JumpHorizontal(x_:Int, y_:Int, dx_:Int, length_:Int)
+	function JumpHorizontal(x_:Int, y_:Int, dx_:Int, length_:Int, expanding_:Bool):JumpResult
 	{
 		if (x_ < 0 || x_ >= map.GetWidth())
 		{
-			return {found: false, jumpPoints: null};
+			return {found: false, jumpPoint: null};
 		}
 		
 		//var endTile_:Int = x_ + (length_ * dx_);
@@ -201,32 +201,35 @@ class JPS implements IPathfinder
 			if (!currentNode.GetTraversable() || (currentNode.searched == true && map.GetNodeByIndex(currentX - dx_, y_).GetPathCost() + 1 >= currentNode.GetPathCost()) )
 			{
 				// we hit a dead end
-				return {found: false, jumpPoints: null};
+				return {found: false, jumpPoint: null};
 			}
 			
-			currentNode.SetParent(map.GetNodeByIndex(currentX - dx_, y_));
-			currentNode.searched = true;
-			currentNode.SetPathCost(currentNode.GetParent().GetPathCost() + 1);
+			if (expanding_)
+			{
+				currentNode.SetParent(map.GetNodeByIndex(currentX - dx_, y_));
+				currentNode.searched = true;
+				currentNode.SetPathCost(currentNode.GetParent().GetPathCost() + 1);
+			}
 			
 			// check to see if the current node has a forced neighbour, or is the end node
 			if ((currentNode == endNode) ||
 			((y_ + 1 < map.GetHeight()) && (currentX + dx_ != endTile) && (!map.GetNodeByIndex(currentX, y_ + 1).GetTraversable() && map.GetNodeByIndex(currentX + dx_, y_ + 1).GetTraversable()) || // forced neighbour above
 			((y_ - 1 >= 0) && (currentX + dx_ != endTile) && !map.GetNodeByIndex(currentX, y_ - 1).GetTraversable() && map.GetNodeByIndex(currentX + dx_, y_ - 1).GetTraversable())))// forced neighbour below
 			{
-				return {found: true, jumpPoints: [currentNode]};
+				return {found: true, jumpPoint: currentNode};
 			}
 			
 			currentX += dx_;
 		}
 	
-		return {found: false, jumpPoints: null}; // we hit the end of the map, either 0 or map.width
+		return {found: false, jumpPoint: null}; // we hit the end of the map, either 0 or map.width
 	}
 	
-	function JumpVertical(x_:Int, y_:Int, dy_:Int, length_:Int)
+	function JumpVertical(x_:Int, y_:Int, dy_:Int, length_:Int, expanding_:Bool):JumpResult
 	{
 		if (y_ < 0 || y_ >= map.GetHeight())
 		{
-			return {found: false, jumpPoints: null};
+			return {found: false, jumpPoint: null};
 		}
 		
 		//var endTile_:Int = x_ + (length_ * dx_);
@@ -257,32 +260,35 @@ class JPS implements IPathfinder
 			if (!currentNode.GetTraversable() || (currentNode.searched == true && map.GetNodeByIndex(x_, currentY - dy_).GetPathCost() + 1 >= currentNode.GetPathCost()))
 			{
 				// we hit a dead end
-				return {found: false, jumpPoints: null};
+				return {found: false, jumpPoint: null};
 			}
 			
-			currentNode.SetParent(map.GetNodeByIndex(x_, currentY - dy_));
-			currentNode.searched = true;
-			currentNode.SetPathCost(currentNode.GetParent().GetPathCost() + 1);
+			if (expanding_)
+			{
+				currentNode.SetParent(map.GetNodeByIndex(x_, currentY - dy_));
+				currentNode.searched = true;
+				currentNode.SetPathCost(currentNode.GetParent().GetPathCost() + 1);
+			}
 			
 			// check to see if the current node has a forced neighbour
 			if ((currentNode == endNode) ||
 			((currentY + dy_ != endTile) && (x_ + 1 < map.GetWidth()) && (!map.GetNodeByIndex(x_ + 1, currentY).GetTraversable() && map.GetNodeByIndex(x_ + 1, currentY + dy_).GetTraversable())) || // forced neighbour right
 			((currentY + dy_ != endTile) && (x_ - 1 >= 0) && (!map.GetNodeByIndex(x_ - 1, currentY).GetTraversable() && map.GetNodeByIndex(x_ - 1, currentY + dy_).GetTraversable())))// forced neighbour left
 			{
-				return {found: true, jumpPoints: [currentNode]};
+				return {found: true, jumpPoint: currentNode};
 			}
 			
 			currentY += dy_;
 		}
 	
-		return {found: false, jumpPoints: null}; // we hit the end of the map, either 0 or map.height
+		return {found: false, jumpPoint: null}; // we hit the end of the map, either 0 or map.height
 	}
 	
-	function JumpDiagonal(x_:Int, y_:Int, dx_:Int, dy_:Int, length_:Int)
+	function JumpDiagonal(x_:Int, y_:Int, dx_:Int, dy_:Int, length_:Int):JumpResult
 	{
 		if (y_ < 0 || y_ >= map.GetHeight() || x_ < 0 || x_ >= map.GetWidth())
 		{
-			return {found: false, jumpPoints: null};
+			return {found: false, jumpPoint: null};
 		}
 		
 		//var endTile_:Int = x_ + (length_ * dx_);
@@ -318,7 +324,7 @@ class JPS implements IPathfinder
 			if (!currentNode.GetTraversable() || (currentNode.searched == true && map.GetNodeByIndex(currentX - dx_, currentY - dy_).GetPathCost() + 1 >= currentNode.GetPathCost()))
 			{
 				// we hit a dead end
-				return {found: false, jumpPoints: null};
+				return {found: false, jumpPoint: null};
 			}
 			
 			currentNode.SetParent(map.GetNodeByIndex(currentX - dx_, currentY - dy_));
@@ -326,11 +332,11 @@ class JPS implements IPathfinder
 			currentNode.SetPathCost(currentNode.GetParent().GetPathCost() + 1.4);
 			
 			//check horizontal + vertical directions
-			var horizontal = JumpHorizontal(currentX + dx_, currentY, dx_, length_);
-			var vertical = JumpVertical(currentX, currentY + dy_, dy_, length_);
+			var horizontal = JumpHorizontal(currentX + dx_, currentY, dx_, length_, false);
+			var vertical = JumpVertical(currentX, currentY + dy_, dy_, length_, false);
 			if (horizontal.found || vertical.found)
 			{
-				return {found: true, jumpPoints: [currentNode, horizontal.found ? horizontal.jumpPoints[0] : vertical.jumpPoints[0]]};
+				return { found: true, jumpPoint: currentNode };// , horizontal.found ? horizontal.jumpPoints[0] : vertical.jumpPoints[0]] };
 			}
 			
 			// check to see if the current node has a forced neighbour
@@ -338,14 +344,14 @@ class JPS implements IPathfinder
 			(!map.GetNodeByIndex(currentX - dx_, currentY).GetTraversable() && map.GetNodeByIndex(currentX - dx_, currentY + dy_).GetTraversable()) &&
 			(!map.GetNodeByIndex(currentX, currentY - dy_).GetTraversable() && map.GetNodeByIndex(currentX + dx_, currentY - dy_).GetTraversable()))
 			{
-				return {found: true, jumpPoints: [currentNode]};
+				return {found: true, jumpPoint: currentNode};
 			}
 			
 			currentX += dx_;
 			currentY += dy_;
 		}
 	
-		return {found: false, jumpPoints: null}; // we hit the end of the map, either 0 or map.height
+		return {found: false, jumpPoint: null}; // we hit the end of the map, either 0 or map.height
 		
 	}
 	

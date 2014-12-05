@@ -45,8 +45,8 @@ class Main
 		for (path in paths) 
 		{
 			trace("looking through: " + i++ + " _ " + path.start.GetX() + "," + path.start.GetY() + " t: " + path.start.GetTraversable() + " _ " + path.end.GetX() + "," + path.end.GetY() + " t: " + path.end.GetTraversable());
-			//ComparePath( GetPath(pathfinder, path, map), GetPath(jps, path, map) , 0.1);
-			GetPath(pathfinder, path, map); // currently using GetPath on just the A* algorithm to determine whether a scenario is viable
+			ComparePath( GetPath(pathfinder, path, map), GetPath(jps, path, map) , 0.1);
+			//GetPath(jps, path, map); // currently using GetPath on just the A* algorithm to determine whether a scenario is viable
 		}
 	}
 	
