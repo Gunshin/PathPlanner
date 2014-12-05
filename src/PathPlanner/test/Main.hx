@@ -38,15 +38,15 @@ class Main
 		var jps:IPathfinder = new JPS();
 		
 		var map = LoadMap("resources/maps/bloodvenomfalls.map");
-		//var paths = LoadScenarios("resources/scenarios/bloodvenomfalls.map.scen", map);
-		var paths = GeneratePaths(map, 50);
+		var paths = LoadScenarios("resources/scenarios/bloodvenomfalls.map.scen", map);
+		//var paths = GeneratePaths(map, 50);
 		
 		var i = 0;
 		for (path in paths) 
 		{
 			trace("looking through: " + i++ + " _ " + path.start.GetX() + "," + path.start.GetY() + " t: " + path.start.GetTraversable() + " _ " + path.end.GetX() + "," + path.end.GetY() + " t: " + path.end.GetTraversable());
 			//ComparePath( GetPath(pathfinder, path, map), GetPath(jps, path, map) , 0.1);
-			GetPath(pathfinder, path, map);
+			GetPath(pathfinder, path, map); // currently using GetPath on just the A* algorithm to determine whether a scenario is viable
 		}
 	}
 	
@@ -197,7 +197,7 @@ class Main
 			while (true)
 			{
 				/* each line in the scenario file is split up into segements seperated by a whitespace which represent different things.
-				 * [0] Bucket (not sure)
+				 * [0] Bucket
 				 * [1] map file path
 				 * [2] map width
 				 * [3] map height
