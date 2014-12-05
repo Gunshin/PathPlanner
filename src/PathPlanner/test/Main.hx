@@ -1,13 +1,17 @@
 package pathPlanner.test;
 
 import haxe.io.Eof;
+import haxe.io.Path;
+import haxe.macro.MacroStringTools;
 import pathPlanner.IPathfinder;
+import pathPlanner.Node;
 import pathPlanner.test.Main.PathResult;
 import sys.io.File;
 import sys.io.FileOutput;
 
 import pathPlanner.Map;
 
+typedef Path = { start:Node, end:Node, optimalLength:Float }
 typedef PathResult = { pathplanner:IPathfinder, pathLength: Float, path: Array<Node> }
 
 /**
@@ -16,8 +20,6 @@ typedef PathResult = { pathplanner:IPathfinder, pathLength: Float, path: Array<N
  */
 class Main 
 {
-
-	var map:Array<Array<Node>>;
 	
 	#if debug
 	function Print(message_:String)
@@ -35,14 +37,16 @@ class Main
 		var pathfinder:IPathfinder = new AStar();
 		var jps:IPathfinder = new JPS();
 		
-		var map = LoadMap("resources/maps/battleground.map");
-		var segments = LoadScenarios("resources/scenarios/battleground.map.scen");
+		var map = LoadMap("resources/maps/bloodvenomfalls.map");
+		//var paths = LoadScenarios("resources/scenarios/bloodvenomfalls.map.scen", map);
+		var paths = GeneratePaths(map, 50);
 		
 		var i = 0;
-		for (segment in segments)
+		for (path in paths) 
 		{
-			trace("looking through: " + i++);
-			ComparePath( GetPath(pathfinder, segment, map), GetPath(jps, segment, map) , 0.1);
+			trace("looking through: " + i++ + " _ " + path.start.GetX() + "," + path.start.GetY() + " t: " + path.start.GetTraversable() + " _ " + path.end.GetX() + "," + path.end.GetY() + " t: " + path.end.GetTraversable());
+			//ComparePath( GetPath(pathfinder, path, map), GetPath(jps, path, map) , 0.1);
+			GetPath(pathfinder, path, map);
 		}
 	}
 	
@@ -52,21 +56,19 @@ class Main
 		trace("path length: " + path.length);
 		for (i in 0...path.length)
 		{
-			trace(path[i].x + " _ " + path[i].y);
+			trace(path[i].GetX() + " _ " + path[i].GetY());
 		}
 		
 		trace("path length of: " + pathStruct_.pathLength);
 	}
 	
-	public function GetPath(pathfinder_:IPathfinder, scenario_, map_:Map):PathResult
+	public function GetPath(pathfinder_:IPathfinder, path_:Path, map_:Map):PathResult
 	{
-		var sNode = map_.GetNodeByIndex(scenario_.sx, scenario_.sy);
-		var eNode = map_.GetNodeByIndex(scenario_.gx, scenario_.gy);
 		
-		var path:Array<Node> = pathfinder_.FindPath(sNode, eNode, 
+		var path:Array<Node> = pathfinder_.FindPath(path_.start, path_.end, 
 		function(nodeOne, nodeTwo)
 		{
-			return Math.sqrt(Math.pow(nodeOne.x - nodeTwo.x, 2) + Math.pow(nodeOne.y - nodeTwo.y, 2));
+			return Math.sqrt(Math.pow(nodeOne.GetX() - nodeTwo.GetX(), 2) + Math.pow(nodeOne.GetY() - nodeTwo.GetY(), 2));
 		}
 		);
 		
@@ -76,8 +78,8 @@ class Main
 		var pathLength:Float = 0;
 		for (node in path)
 		{
-			if(node.parent != null)
-			pathLength += Math.sqrt(Math.pow(node.x - node.parent.x, 2) + Math.pow(node.y - node.parent.y, 2));
+			if(node.GetParent() != null)
+			pathLength += Math.sqrt(Math.pow(node.GetX() - node.GetParent().GetX(), 2) + Math.pow(node.GetY() - node.GetParent().GetY(), 2));
 		}
 		
 		return {pathplanner:pathfinder_, path: path, pathLength: pathLength };
@@ -121,20 +123,20 @@ class Main
 					switch(char)
 					{
 						case '.':
-							map.GetNodeByIndex(x, y).traversable = true;
+							map.GetNodeByIndex(x, y).SetTraversable(true);
 						case 'G':
-							map.GetNodeByIndex(x, y).traversable = true;
+							map.GetNodeByIndex(x, y).SetTraversable(true);
 						case 'S':
-							map.GetNodeByIndex(x, y).traversable = true;
+							map.GetNodeByIndex(x, y).SetTraversable(true);
 							
 						case '@':
-							map.GetNodeByIndex(x, y).traversable = false;
+							map.GetNodeByIndex(x, y).SetTraversable(false);
 						case 'O':
-							map.GetNodeByIndex(x, y).traversable = false;
+							map.GetNodeByIndex(x, y).SetTraversable(false);
 						case 'W':
-							map.GetNodeByIndex(x, y).traversable = false;
+							map.GetNodeByIndex(x, y).SetTraversable(false);
 						case 'T':
-							map.GetNodeByIndex(x, y).traversable = false;
+							map.GetNodeByIndex(x, y).SetTraversable(false);
 							
 						default:
 							throw "something went wrong: " + char;
@@ -152,11 +154,41 @@ class Main
 		return map;
 	}
 	
-	public function LoadScenarios(filePath_:String)
+	public function GeneratePaths(map_:Map, amount_:Int):Array<Path>
+	{
+		var returnArray:Array<Path> = new Array<Path>();
+		for (i in 0...amount_)
+		{
+			returnArray[i] = {
+				start: GetRandomTraversableNode(map_),
+				end: GetRandomTraversableNode(map_),
+				optimalLength:0
+			}
+		}
+		
+		return returnArray;
+	}
+	
+	public function GetRandomTraversableNode(map_:Map):Node
+	{
+		var node:Node = null;
+        while(node == null)
+        {
+            var temp:Node = map_.GetNodeByIndex(Std.random(map_.GetWidth()), Std.random(map_.GetHeight()));
+            if(temp.GetTraversable() == true)
+            {
+                node = temp;
+            }
+        }
+
+        return node;
+	}
+	
+	public function LoadScenarios(filePath_:String, map_:Map):Array<Path>
 	{
 		var fin = File.read(filePath_, false);
 		
-		var segmentArray = [];
+		var segmentArray:Array<Path> = new Array<Path>();
 		
 		try
 		{
@@ -176,14 +208,9 @@ class Main
 				 * [8] optimal length
 				 */
 				var segments = fin.readLine().split(" ");
-				segmentArray.push({
-					filePath: segments[1],
-					width: Std.parseInt(segments[2]),
-					height: Std.parseInt(segments[3]),
-					sx: Std.parseInt(segments[4]),
-					sy: Std.parseInt(segments[5]),
-					gx: Std.parseInt(segments[6]),
-					gy: Std.parseInt(segments[7]),
+				segmentArray.push( {
+					start: map_.GetNodeByIndex(Std.parseInt(segments[4]), Std.parseInt(segments[5])),
+					end: map_.GetNodeByIndex(Std.parseInt(segments[6]), Std.parseInt(segments[7])),
 					optimalLength: Std.parseFloat(segments[8])
 				});
 				

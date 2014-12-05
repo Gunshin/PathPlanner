@@ -26,7 +26,7 @@ class AStar implements IPathfinder
 	public function FindPath(startNode_:Node, endNode_:Node, heuristicFunction_: Node -> Node -> Float):Array<Node>
 	#end
 	{
-		startNode_.parent = null;
+		startNode_.SetParent(null);
 		
 		var open:PriorityQueue<Node> = new PriorityQueue<Node>(true, 128);
 		var closed:PriorityQueue<Node> = new PriorityQueue<Node>(true, 128);
@@ -49,7 +49,7 @@ class AStar implements IPathfinder
 			{
 				for (i in 0...neighbours.length)
 				{
-					if (neighbours[i] != null && neighbours[i].connectedNode.traversable == true) // if node is traversable, expand it
+					if (neighbours[i] != null && neighbours[i].connectedNode.GetTraversable() == true) // if node is traversable, expand it
 					{
 						Improve(currentNode, neighbours[i], endNode_, open, closed, heuristicFunction_);
 					}
@@ -71,10 +71,10 @@ class AStar implements IPathfinder
 	{
 		if (open_.contains(successorNode_.connectedNode))
 		{
-			if (currentNode_.pathCost + successorNode_.distanceBetween < successorNode_.connectedNode.pathCost)
+			if (currentNode_.GetPathCost() + successorNode_.distanceBetween < successorNode_.connectedNode.GetPathCost())
 			{
-				successorNode_.connectedNode.parent = currentNode_;
-				successorNode_.connectedNode.pathCost = currentNode_.pathCost + successorNode_.distanceBetween;
+				successorNode_.connectedNode.SetParent(currentNode_);
+				successorNode_.connectedNode.SetPathCost(currentNode_.GetPathCost() + successorNode_.distanceBetween);
 				#if cs
 				successorNode_.connectedNode.heuristic = heuristicFunction_.Invoke(successorNode_.connectedNode, endNode_);
 				#else
@@ -83,16 +83,16 @@ class AStar implements IPathfinder
 				// that a function may change it, we will forced it to update everytime.
 				
 				// since we are adding it to the queue for the first time, we need to set its priority
-				open_.reprioritize(successorNode_.connectedNode, successorNode_.connectedNode.pathCost + successorNode_.connectedNode.heuristic);
+				open_.reprioritize(successorNode_.connectedNode, successorNode_.connectedNode.GetPathCost() + successorNode_.connectedNode.heuristic);
 			}
 		}
 		else if (closed_.contains(successorNode_.connectedNode))
 		{
 			// if it is in the closed set, but we have found a better route to this neighbour, update it with the better route.
-			if (currentNode_.pathCost + successorNode_.distanceBetween < successorNode_.connectedNode.pathCost)
+			if (currentNode_.GetPathCost() + successorNode_.distanceBetween < successorNode_.connectedNode.GetPathCost())
 			{
-				successorNode_.connectedNode.parent = currentNode_;
-				successorNode_.connectedNode.pathCost = currentNode_.pathCost + successorNode_.distanceBetween;
+				successorNode_.connectedNode.SetParent(currentNode_);
+				successorNode_.connectedNode.SetPathCost(currentNode_.GetPathCost() + successorNode_.distanceBetween);
 				#if cs
 				successorNode_.connectedNode.heuristic = heuristicFunction_.Invoke(successorNode_.connectedNode, endNode_);
 				#else
@@ -101,15 +101,15 @@ class AStar implements IPathfinder
 				// that a function may change it, we will forced it to update everytime.
 				
 				closed_.remove(successorNode_.connectedNode); // remove it from the closed list so it can be explored again to update values
-				successorNode_.connectedNode.priority = successorNode_.connectedNode.pathCost + successorNode_.connectedNode.heuristic;
+				successorNode_.connectedNode.priority = successorNode_.connectedNode.GetPathCost() + successorNode_.connectedNode.heuristic;
 				open_.enqueue(successorNode_.connectedNode); // add to open list so we can allow exploration
 			}
 		}
 		else
 		{
 			// if the neighbour is not in the open set, add it.
-			successorNode_.connectedNode.parent = currentNode_;
-			successorNode_.connectedNode.pathCost = currentNode_.pathCost + successorNode_.distanceBetween;
+			successorNode_.connectedNode.SetParent(currentNode_);
+			successorNode_.connectedNode.SetPathCost(currentNode_.GetPathCost() + successorNode_.distanceBetween);
 			#if cs
 			successorNode_.connectedNode.heuristic = heuristicFunction_.Invoke(successorNode_.connectedNode, endNode_);
 			#else
@@ -117,7 +117,7 @@ class AStar implements IPathfinder
 			#end
 			
 			// since we are adding it to the queue for the first time, we need to set its priority
-			successorNode_.connectedNode.priority = successorNode_.connectedNode.pathCost + successorNode_.connectedNode.heuristic;
+			successorNode_.connectedNode.priority = successorNode_.connectedNode.GetPathCost() + successorNode_.connectedNode.heuristic;
 			open_.enqueue(successorNode_.connectedNode);
 		}
 	}

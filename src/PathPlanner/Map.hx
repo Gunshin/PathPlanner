@@ -17,10 +17,10 @@ import de.polygonal.ds.HashTable;
  */
 class Map implements IGraphStructure
 {
-	public var width(get, null):Int = 0;
-	public var height(get, null):Int = 0;
-	public var nodeWidth(get, null):Int = 0;
-	public var nodeHeight(get, null):Int = 0;
+	var width:Int = 0;
+	var height:Int = 0;
+	var nodeWidth:Int = 0;
+	var nodeHeight:Int = 0;
 	
 	var map:Array<Array<Node>>;
 	
@@ -196,8 +196,8 @@ class Map implements IGraphStructure
 	
 	public function GetIndexOfNode(node_:Node)
 	{
-		var indexX:Int = cast(node_.x / nodeWidth, Int);
-		var indexY:Int = cast(node_.y / nodeHeight, Int);
+		var indexX:Int = cast(node_.GetX() / nodeWidth, Int);
+		var indexY:Int = cast(node_.GetY() / nodeHeight, Int);
 		return { contained: map[indexX][indexY] == node_, index: { x: indexX, y: indexY }};
 	}
 	
@@ -210,30 +210,30 @@ class Map implements IGraphStructure
 		{
 			for (j in 0...height)
 			{
-				map[i][j].parent = null;
+				map[i][j].SetParent(null);
 				map[i][j].searched = false;
-				map[i][j].pathCost = 0;
+				map[i][j].SetPathCost(0);
 				map[i][j].heuristic = 0;
 			}
 		}
 	}
 	
-	function get_width():Int
+	public function GetWidth():Int
 	{
 		return width;
 	}
 	
-	function get_height():Int
+	public function GetHeight():Int
 	{
 		return height;
 	}
 	
-	function get_nodeWidth():Int
+	public function GetNodeWidth():Int
 	{
 		return nodeWidth;
 	}
 	
-	function get_nodeHeight():Int
+	public function GetNodeHeight():Int
 	{
 		return nodeHeight;
 	}

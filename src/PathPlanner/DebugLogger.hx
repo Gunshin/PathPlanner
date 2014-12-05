@@ -10,16 +10,16 @@ import cs.Lib;
  */
 class DebugLogger 
 {
-	public static var instance(get, null):DebugLogger;
+	static var instance:DebugLogger;
 	
 	public var expandedSet:Array<Node> = new Array<Node>();
 	public var openSet:Array<Node> = new Array<Node>();
 	public var closedSet:Array<Node> = new Array<Node>();
 	
 	#if cs
-	@:isVar public var loggingFunction(get, set):cs.system.Action_1<String>;
+	var loggingFunction:cs.system.Action_1<String>;
 	#else
-	@:isVar public var loggingFunction(get, set):String -> Void;
+	var loggingFunction:String -> Void;
 	#end
 	
 	function new()
@@ -46,7 +46,7 @@ class DebugLogger
 		}
 	}
 	
-	public static function get_instance():DebugLogger
+	public static function GetInstance():DebugLogger
 	{
 		if (instance == null)
 		{
@@ -57,18 +57,18 @@ class DebugLogger
 	}
 	
 	#if cs
-	public function get_loggingFunction():cs.system.Action_1<String>
+	public function GetLoggingFunction():cs.system.Action_1<String>
 	#else
-	public function get_loggingFunction():String -> Void
+	public function GetLoggingFunction():String -> Void
 	#end
 	{
 		return loggingFunction;
 	}
 	
 	#if cs
-	public function set_loggingFunction(loggingFunc_:cs.system.Action_1<String>):cs.system.Action_1<String>
+	public function SetLoggingFunction(loggingFunc_:cs.system.Action_1<String>):cs.system.Action_1<String>
 	#else
-	public function set_loggingFunction(loggingFunc_:String -> Void):String -> Void
+	public function SetLoggingFunction(loggingFunc_:String -> Void):String -> Void
 	#end
 	{
 		return loggingFunction = loggingFunc_;

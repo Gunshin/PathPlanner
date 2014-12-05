@@ -23,7 +23,7 @@ class DistanceNode
 		}
 		else if (currentNode_ != null)
 		{
-			distanceBetween = Math.sqrt(Math.pow(connectedNode_.x - currentNode_.x, 2) + Math.pow(connectedNode_.y - currentNode_.y, 2));
+			distanceBetween = Math.sqrt(Math.pow(connectedNode_.GetX() - currentNode_.GetX(), 2) + Math.pow(connectedNode_.GetY() - currentNode_.GetY(), 2));
 			distanceCalculated = true;
 		}
 		

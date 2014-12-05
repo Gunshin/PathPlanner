@@ -20,17 +20,17 @@ extends HashableItem
 	//TODO: fix this damn class
 	public var searched:Bool = false;
 	
-	public var x(get, null):Float;
-	public var y(get, null):Float;
+	var x:Float;
+	var y:Float;
 	
-	@:isVar public var neighboursStructure(get, set):IGraphStructure;
+	var neighboursStructure:IGraphStructure;
 	
-	@:isVar public var traversable(get, set):Bool;
+	var traversable:Bool;
 	
 	public var heuristic:Float = 0;
-	@:isVar public var pathCost(get, set):Float = 0;
+	var pathCost:Float = 0;
 	
-	@:isVar public var parent(get, set):Node = null;
+	var parent:Node = null;
 		
 	public function new(x_:Float, y_:Float, traversable_:Bool, neighboursStructure_:IGraphStructure) 
 	{
@@ -61,52 +61,52 @@ extends HashableItem
 		return neighboursStructure.RemoveNeighbour(this, neighbour_);
 	}
 	
-	function get_x():Float
+	public function GetX():Float
 	{
 		return x;
 	}
 	
-	function get_y():Float
+	public function GetY():Float
 	{
 		return y;
 	}
 	
-	function get_traversable():Bool
+	public function GetTraversable():Bool
 	{
 		return traversable;
 	}
 	
-	function set_traversable(traversable_:Bool):Bool
+	public function SetTraversable(traversable_:Bool):Bool
 	{
 		return traversable = traversable_;
 	}
 	
-	function get_pathCost():Float
+	public function GetPathCost():Float
 	{
 		return pathCost;
 	}
 	
-	function set_pathCost(pathCost_:Float):Float
+	public function SetPathCost(pathCost_:Float):Float
 	{
 		return pathCost = pathCost_;
 	}
 	
-	function get_parent():Node
+	public function GetParent():Node
 	{
 		return parent;
 	}
 	
-	function set_parent(parent_:Node):Node
+	public function SetParent(parent_:Node):Node
 	{
 		return parent = parent_;
 	}
 	
-	function get_neighboursStructure():IGraphStructure
+	public function GetNeighboursStructure():IGraphStructure
 	{
 		return neighboursStructure;
 	}
 	
-	function set_neighboursStructure(structure_:IGraphStructure):IGraphStructure
+	public function SetNeighboursStructure(structure_:IGraphStructure):IGraphStructure
 	{
 		return neighboursStructure = structure_;
 	}

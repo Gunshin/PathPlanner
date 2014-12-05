@@ -17,7 +17,7 @@ class PathUtility
 		{
 			
 			path.push(currentNode_);
-			currentNode_ = currentNode_.parent;
+			currentNode_ = currentNode_.GetParent();
 			
 		}
 		path.reverse();
