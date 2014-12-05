@@ -9,7 +9,7 @@ import pathPlanner.test.Main.PathResult;
 import sys.io.File;
 import sys.io.FileOutput;
 
-import pathPlanner.Map;
+import pathPlanner.GraphGridMap;
 
 typedef Path = { start:Node, end:Node, optimalLength:Float }
 typedef PathResult = { pathplanner:IPathfinder, pathLength: Float, path: Array<Node> }
@@ -62,7 +62,7 @@ class Main
 		trace("path length of: " + pathStruct_.pathLength);
 	}
 	
-	public function GetPath(pathfinder_:IPathfinder, path_:Path, map_:Map):PathResult
+	public function GetPath(pathfinder_:IPathfinder, path_:Path, map_:GraphGridMap):PathResult
 	{
 		
 		var path:Array<Node> = pathfinder_.FindPath(path_.start, path_.end, 
@@ -100,10 +100,10 @@ class Main
 		
 	}
 	
-	public function LoadMap(filePath_:String):Map
+	public function LoadMap(filePath_:String):GraphGridMap
 	{
 		var fin = File.read(filePath_, false);
-		var map:Map = null;
+		var map:GraphGridMap = null;
 		try
 		{
 			fin.readLine(); //map type
@@ -111,7 +111,7 @@ class Main
 			var width:Int = Std.parseInt(fin.readLine().split(" ")[1]);
 			fin.readLine(); //not sure what the 4th line is for in the map files
 			
-			map = new Map(width, height, 1, 1);
+			map = new GraphGridMap(width, height, 1, 1);
 
 			for(y in 0...height)
 			{
@@ -154,7 +154,7 @@ class Main
 		return map;
 	}
 	
-	public function GeneratePaths(map_:Map, amount_:Int):Array<Path>
+	public function GeneratePaths(map_:GraphGridMap, amount_:Int):Array<Path>
 	{
 		var returnArray:Array<Path> = new Array<Path>();
 		for (i in 0...amount_)
@@ -169,7 +169,7 @@ class Main
 		return returnArray;
 	}
 	
-	public function GetRandomTraversableNode(map_:Map):Node
+	public function GetRandomTraversableNode(map_:GraphGridMap):Node
 	{
 		var node:Node = null;
         while(node == null)
@@ -184,7 +184,7 @@ class Main
         return node;
 	}
 	
-	public function LoadScenarios(filePath_:String, map_:Map):Array<Path>
+	public function LoadScenarios(filePath_:String, map_:GraphGridMap):Array<Path>
 	{
 		var fin = File.read(filePath_, false);
 		

@@ -15,7 +15,7 @@ typedef JumpResult = { found:Bool, jumpPoint:Node }
 class JPS implements IPathfinder 
 {
 	
-	var map:Map;
+	var map:GraphGridMap;
 	var endNode:Node;
 	
 	#if debug
@@ -33,13 +33,13 @@ class JPS implements IPathfinder
 	public function FindPath(startNode_:Node, endNode_:Node, heuristicFunction_: Node -> Node -> Float):Array<Node>
 	#end
 	{
-		if (!Std.is(startNode_.GetNeighboursStructure(), Map))
+		if (!Std.is(startNode_.GetNeighboursStructure(), GraphGridMap))
 		{
 			throw "The nodes used to find a path do not have a \'Map\' graph structure";
 			return null;
 		}
 		
-		map = cast(startNode_.GetNeighboursStructure(), Map);
+		map = cast(startNode_.GetNeighboursStructure(), GraphGridMap);
 		map.ResetForPathplanning(); //TODO: correct Node implementation
 		
 		#if debugging

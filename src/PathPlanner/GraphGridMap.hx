@@ -15,7 +15,7 @@ import de.polygonal.ds.HashTable;
  * This class stores a rectangular grid map.
  * Additional neighbours are added to nodes through a hashmap, with each node being a key.
  */
-class Map implements IGraphStructure
+class GraphGridMap implements IGraphStructure
 {
 	var width:Int = 0;
 	var height:Int = 0;
