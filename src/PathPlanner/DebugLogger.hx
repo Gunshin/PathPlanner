@@ -4,17 +4,28 @@ package pathPlanner;
 import cs.Lib;
 #end
 
+// secondary node incase SetParent or similar
+typedef Action = {actionType:Int, primaryNode:Node, secondaryNode:Node}
+
 /**
  * ...
  * @author ...
  */
+@:nativeGen
 class DebugLogger 
 {
+	@:protected
 	static var instance:DebugLogger;
 	
-	public var expandedSet:Array<Node> = new Array<Node>();
-	public var openSet:Array<Node> = new Array<Node>();
-	public var closedSet:Array<Node> = new Array<Node>();
+	public var actionTypeMap:Map<String, Int> = [
+		"Expand" => 1,
+		"AddToOpen" => 2,
+		"AddToClosed" => 3,
+		"SetParent" => 4
+	];
+	
+	@:protected
+	private var actionList:Array<Action> = new Array<Action>();
 	
 	#if cs
 	var loggingFunction:cs.system.Action_1<String>;
@@ -25,6 +36,36 @@ class DebugLogger
 	function new()
 	{
 		
+	}
+	
+	public function GetActionList():Array<Action>
+	{
+		return actionList;
+	}
+	
+	public function ResetActionList()
+	{
+		actionList = new Array<Action>();
+	}
+	
+	public function Expand(node:Node)
+	{
+		actionList.push({actionType:1, primaryNode:node, secondaryNode:null});
+	}
+	
+	public function AddToOpen(node:Node)
+	{
+		actionList.push({actionType:2, primaryNode:node, secondaryNode:null});
+	}
+	
+	public function AddToClosed(node:Node)
+	{
+		actionList.push({actionType:3, primaryNode:node, secondaryNode:null});
+	}
+	
+	public function SetParent(node:Node, parent:Node)
+	{
+		actionList.push({actionType:4, primaryNode:node, secondaryNode:parent});
 	}
 	
 	public function Print(message_:String)

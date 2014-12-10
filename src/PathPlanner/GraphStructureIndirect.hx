@@ -10,6 +10,7 @@ package pathPlanner;
  */
 class GraphStructureIndirect implements IGraphStructure
 {
+	@:protected
 	var neighbours:Array<DistanceNode> = new Array<DistanceNode>();
 
 	public function new() 

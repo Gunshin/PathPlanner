@@ -13,4 +13,4 @@ pathPlanner.PathUtility
 pathPlanner.DebugLogger
 pathPlanner.IGraphStructure
 pathPlanner.GraphStructureIndirect
-pathPlanner.Map
+pathPlanner.GraphGridMap

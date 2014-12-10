@@ -20,16 +20,23 @@ extends HashableItem
 	//TODO: fix this damn class
 	public var searched:Bool = false;
 	
+	@:protected
 	var x:Float;
+	@:protected
 	var y:Float;
 	
+	@:protected
 	var neighboursStructure:IGraphStructure;
 	
+	@:protected
 	var traversable:Bool;
 	
 	public var heuristic:Float = 0;
+	
+	@:protected
 	var pathCost:Float = 0;
 	
+	@:protected
 	var parent:Node = null;
 		
 	public function new(x_:Float, y_:Float, traversable_:Bool, neighboursStructure_:IGraphStructure) 

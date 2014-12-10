@@ -31,21 +31,23 @@ class Main
 	public function new()
 	{
 		#if debugging
-		//DebugLogger.instance.loggingFunction = Print;
+		//DebugLogger.GetInstance().SetLoggingFunction(Print);
 		#end
 		
 		var pathfinder:IPathfinder = new AStar();
 		var jps:IPathfinder = new JPS();
 		
-		var map = LoadMap("resources/maps/bloodvenomfalls.map");
-		var paths = LoadScenarios("resources/scenarios/bloodvenomfalls.map.scen", map);
+		var map = LoadMap("resources/DragonAgeMaps/brc100d.map");
+		var paths = LoadScenarios("resources/DragonAgeScenarios/brc100d.map.scen", map, "	");
 		//var paths = GeneratePaths(map, 50);
 		
+		//ComparePath( GetPath(pathfinder, paths[21], map), GetPath(jps, paths[21], map) , 0.1);
+		
 		var i = 0;
-		for (path in paths) 
+		for (path in paths)
 		{
 			trace("looking through: " + i++ + " _ " + path.start.GetX() + "," + path.start.GetY() + " t: " + path.start.GetTraversable() + " _ " + path.end.GetX() + "," + path.end.GetY() + " t: " + path.end.GetTraversable());
-			ComparePath( GetPath(pathfinder, path, map), GetPath(jps, path, map) , 0.1);
+			ComparePath( GetPath(pathfinder, path, map), GetPath(jps, path, map) , 0.4);
 			//GetPath(jps, path, map); // currently using GetPath on just the A* algorithm to determine whether a scenario is viable
 		}
 	}
@@ -73,7 +75,7 @@ class Main
 		);
 		
 		var pathplannerName = Type.getClassName(Type.getClass(pathfinder_));
-		DebugLogger.Assert(path == null, "The pathplanner: " + pathplannerName + " has produced a null path!");
+		DebugLogger.Assert(path == null, "The pathplanner: " + pathplannerName + " has produced a null path! action count: " + DebugLogger.GetInstance().GetActionList().length);
 		
 		var pathLength:Float = 0;
 		for (node in path)
@@ -184,7 +186,7 @@ class Main
         return node;
 	}
 	
-	public function LoadScenarios(filePath_:String, map_:GraphGridMap):Array<Path>
+	public function LoadScenarios(filePath_:String, map_:GraphGridMap, splitChar_:String):Array<Path>
 	{
 		var fin = File.read(filePath_, false);
 		
@@ -207,7 +209,7 @@ class Main
 				 * [7] goal y coord
 				 * [8] optimal length
 				 */
-				var segments = fin.readLine().split(" ");
+				var segments = fin.readLine().split(splitChar_);
 				segmentArray.push( {
 					start: map_.GetNodeByIndex(Std.parseInt(segments[4]), Std.parseInt(segments[5])),
 					end: map_.GetNodeByIndex(Std.parseInt(segments[6]), Std.parseInt(segments[7])),

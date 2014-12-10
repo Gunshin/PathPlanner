@@ -14,5 +14,5 @@ pathPlanner.PathUtility
 pathPlanner.DebugLogger
 pathPlanner.IGraphStructure
 pathPlanner.GraphStructureIndirect
-pathPlanner.Map
+pathPlanner.GraphGridMap
 -cmd "C:\Program Files (x86)\Unity\Editor\Data\Mono\bin\smcs" -target:library -out:bin\Unity\PathPlanner.dll -recurse:bin\Unity\src\*.cs

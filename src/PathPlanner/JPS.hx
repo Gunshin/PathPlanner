@@ -14,13 +14,10 @@ typedef JumpResult = { found:Bool, jumpPoint:Node }
  */
 class JPS implements IPathfinder 
 {
-	
+	@:protected
 	var map:GraphGridMap;
+	@:protected
 	var endNode:Node;
-	
-	#if debug
-	var logger:DebugLogger;
-	#end
 		
 	public function new()
 	{
@@ -45,6 +42,7 @@ class JPS implements IPathfinder
 		#if debugging
 		DebugLogger.Assert(startNode_.GetParent() != null, "warning, map not correctly reset, start node has parent");
 		DebugLogger.Assert(endNode_.GetParent() != null, "warning, map not correctly reset, end node has parent");
+		DebugLogger.GetInstance().ResetActionList();
 		#end
 		
 		endNode = endNode_;
@@ -56,7 +54,9 @@ class JPS implements IPathfinder
 		var closed:PriorityQueue<Node> = new PriorityQueue<Node>(true, 128);
 		
 		open.enqueue(startNode_);
-		
+		#if debugging
+		DebugLogger.GetInstance().AddToOpen(startNode_);
+		#end
 		
 		while (!open.isEmpty())
 		{
@@ -69,9 +69,8 @@ class JPS implements IPathfinder
 			}
 			
 			closed.enqueue(currentNode);
-			
 			#if debugging
-			DebugLogger.GetInstance().closedSet.push(currentNode);
+			DebugLogger.GetInstance().AddToClosed(currentNode);
 			#end
 			
 			Improve(currentNode, open, heuristicFunction_);
@@ -93,7 +92,7 @@ class JPS implements IPathfinder
 		DebugLogger.Assert(open_ == null, "JPS:Improve: open_ is null");
 		DebugLogger.Assert(heuristicFunction_ == null, "JPS:Improve: heuristicFunction_ is null");
 		
-		DebugLogger.GetInstance().expandedSet.push(currentNode_);
+		DebugLogger.GetInstance().Expand(currentNode_);
 		#end
 		
 		var neighbours:Array<Node> = map.GetRawNeighbours(currentNode_);
@@ -115,7 +114,7 @@ class JPS implements IPathfinder
 					open_.enqueue(result.jumpPoint);
 					
 					#if debugging
-					DebugLogger.GetInstance().openSet.push(result.jumpPoint);
+					DebugLogger.GetInstance().AddToOpen(result.jumpPoint);
 					#end
 					
 				}
@@ -134,10 +133,10 @@ class JPS implements IPathfinder
 		var indexResultNode = map.GetIndexOfNode(node_);
 		var indexResultParentNode = map.GetIndexOfNode(parentNode_);
 		
-		var x:Int = indexResultNode.index.x;
-		var y:Int = indexResultNode.index.y;
-		var dx:Int = cast(Math.min(Math.max((x - indexResultParentNode.index.x), -1), 1), Int);
-		var dy:Int = cast(Math.min(Math.max((y - indexResultParentNode.index.y), -1), 1), Int);
+		var x:Int = indexResultNode.x;
+		var y:Int = indexResultNode.y;
+		var dx:Int = cast(Math.min(Math.max((x - indexResultParentNode.x), -1), 1), Int);
+		var dy:Int = cast(Math.min(Math.max((y - indexResultParentNode.y), -1), 1), Int);
 		
 		if (dx != 0 && dy != 0) // check diag first since we apply a horizontal and vertical search on the node inside JumpDiagonal anyways (dont need to do it twice)
 		{
@@ -168,10 +167,6 @@ class JPS implements IPathfinder
 	
 	function JumpHorizontal(x_:Int, y_:Int, dx_:Int, length_:Int, expanding_:Bool):JumpResult
 	{
-		if (x_ < 0 || x_ >= map.GetWidth())
-		{
-			return {found: false, jumpPoint: null};
-		}
 		
 		//var endTile_:Int = x_ + (length_ * dx_);
 		/*
@@ -179,26 +174,19 @@ class JPS implements IPathfinder
 		 * may be stupid on huge open terrain spaces as checking this horizontal line may not provide a good
 		 * result
 		 */
-		var endTile:Int = (dx_ > 0) ? map.GetWidth() - 1 : 0;
-		var incrementAmount:Int = cast(Math.abs(endTile - x_), Int);
 		var currentX:Int = x_;
 		
-		#if debugging
-		DebugLogger.Assert((currentX < 0) || (currentX >= map.GetWidth()), "JPS:JumpHorizontal: currentX outside of bounds: " + currentX);
-		DebugLogger.Assert(incrementAmount < 0, "JPS:JumpHorizontal: incrementAmount is out of bounds: " + incrementAmount);
-		#end
-		
-		for (i in 0...incrementAmount)
+		while (currentX >= 0 && currentX < map.GetWidth())
 		{
 			var currentNode:Node = map.GetNodeByIndex(currentX, y_);
 			
 			#if debugging
-			DebugLogger.Assert(currentNode == null, "JPS:JumpHorizontal: currentNode is null: " + currentX + " _ " + y_);
 			DebugLogger.GetInstance().Print("JumpHorizontal: on node: " + currentX + " _ " + y_  + " with direction x: " + dx_ + " and the node is !null: " + (currentNode != null));
 			#end
 			
 			//check to see if current node is traversable
-			if (!currentNode.GetTraversable() || (currentNode.searched == true && map.GetNodeByIndex(currentX - dx_, y_).GetPathCost() + 1 >= currentNode.GetPathCost()) )
+			if (!currentNode.GetTraversable() || 
+			(currentNode.searched == true && map.GetNodeByIndex(currentX - dx_, y_).GetPathCost() + 1 >= currentNode.GetPathCost()))
 			{
 				// we hit a dead end
 				return {found: false, jumpPoint: null};
@@ -207,14 +195,18 @@ class JPS implements IPathfinder
 			if (expanding_)
 			{
 				currentNode.SetParent(map.GetNodeByIndex(currentX - dx_, y_));
+				#if debugging
+				DebugLogger.GetInstance().SetParent(currentNode, map.GetNodeByIndex(currentX - dx_, y_));
+				#end
 				currentNode.searched = true;
 				currentNode.SetPathCost(currentNode.GetParent().GetPathCost() + 1);
 			}
 			
 			// check to see if the current node has a forced neighbour, or is the end node
 			if ((currentNode == endNode) ||
-			((y_ + 1 < map.GetHeight()) && (currentX + dx_ != endTile) && (!map.GetNodeByIndex(currentX, y_ + 1).GetTraversable() && map.GetNodeByIndex(currentX + dx_, y_ + 1).GetTraversable()) || // forced neighbour above
-			((y_ - 1 >= 0) && (currentX + dx_ != endTile) && !map.GetNodeByIndex(currentX, y_ - 1).GetTraversable() && map.GetNodeByIndex(currentX + dx_, y_ - 1).GetTraversable())))// forced neighbour below
+			((currentX + dx_ >= 0 && currentX + dx_ < map.GetWidth()) &&
+			((y_ + 1 < map.GetHeight()) && (!map.GetNodeByIndex(currentX, y_ + 1).GetTraversable() && map.GetNodeByIndex(currentX + dx_, y_ + 1).GetTraversable()) || // forced neighbour above
+			((y_ - 1 >= 0) && !map.GetNodeByIndex(currentX, y_ - 1).GetTraversable() && map.GetNodeByIndex(currentX + dx_, y_ - 1).GetTraversable()))))// forced neighbour below
 			{
 				return {found: true, jumpPoint: currentNode};
 			}
@@ -227,10 +219,6 @@ class JPS implements IPathfinder
 	
 	function JumpVertical(x_:Int, y_:Int, dy_:Int, length_:Int, expanding_:Bool):JumpResult
 	{
-		if (y_ < 0 || y_ >= map.GetHeight())
-		{
-			return {found: false, jumpPoint: null};
-		}
 		
 		//var endTile_:Int = x_ + (length_ * dx_);
 		/*
@@ -238,26 +226,19 @@ class JPS implements IPathfinder
 		 * may be stupid on huge open terrain spaces as checking this vertical line may not provide a good
 		 * result
 		 */
-		var endTile:Int = (dy_ > 0) ? map.GetHeight() - 1 : 0;
-		var incrementAmount:Int = cast(Math.abs(endTile - y_), Int);
 		var currentY:Int = y_;
 		
-		#if debugging
-		DebugLogger.Assert((currentY < 0) || (currentY >= map.GetHeight()), "JPS:JumpVertical: currentY outside of bounds: " + currentY);
-		DebugLogger.Assert(incrementAmount < 0, "JPS:JumpVertical: incrementAmount is out of bounds: " + incrementAmount);
-		#end
-		
-		for (i in 0...incrementAmount)
+		while (currentY >= 0 && currentY < map.GetHeight())
 		{
 			var currentNode:Node = map.GetNodeByIndex(x_, currentY);
 			
 			#if debugging
-			DebugLogger.Assert(currentNode == null, "JPS:JumpVertical: currentNode is null: " + x_ + " _ " + currentY);
 			DebugLogger.GetInstance().Print("JumpVertical: on node: " + x_ + " _ " + currentY  + " with direction y: " + dy_ + " and the node is !null: " + (currentNode != null));
 			#end
 			
 			//check to see if current node is traversable
-			if (!currentNode.GetTraversable() || (currentNode.searched == true && map.GetNodeByIndex(x_, currentY - dy_).GetPathCost() + 1 >= currentNode.GetPathCost()))
+			if (!currentNode.GetTraversable() || 
+			(currentNode.searched == true && map.GetNodeByIndex(x_, currentY - dy_).GetPathCost() + 1 >= currentNode.GetPathCost()))
 			{
 				// we hit a dead end
 				return {found: false, jumpPoint: null};
@@ -266,14 +247,18 @@ class JPS implements IPathfinder
 			if (expanding_)
 			{
 				currentNode.SetParent(map.GetNodeByIndex(x_, currentY - dy_));
+				#if debugging
+				DebugLogger.GetInstance().SetParent(currentNode, map.GetNodeByIndex(x_, currentY - dy_));
+				#end
 				currentNode.searched = true;
 				currentNode.SetPathCost(currentNode.GetParent().GetPathCost() + 1);
 			}
 			
 			// check to see if the current node has a forced neighbour
 			if ((currentNode == endNode) ||
-			((currentY + dy_ != endTile) && (x_ + 1 < map.GetWidth()) && (!map.GetNodeByIndex(x_ + 1, currentY).GetTraversable() && map.GetNodeByIndex(x_ + 1, currentY + dy_).GetTraversable())) || // forced neighbour right
-			((currentY + dy_ != endTile) && (x_ - 1 >= 0) && (!map.GetNodeByIndex(x_ - 1, currentY).GetTraversable() && map.GetNodeByIndex(x_ - 1, currentY + dy_).GetTraversable())))// forced neighbour left
+			((currentY + dy_ >= 0 && currentY + dy_ < map.GetHeight()) &&
+			((x_ + 1 < map.GetWidth()) && (!map.GetNodeByIndex(x_ + 1, currentY).GetTraversable() && map.GetNodeByIndex(x_ + 1, currentY + dy_).GetTraversable()) || // forced neighbour right
+			((x_ - 1 >= 0) && (!map.GetNodeByIndex(x_ - 1, currentY).GetTraversable() && map.GetNodeByIndex(x_ - 1, currentY + dy_).GetTraversable())))))// forced neighbour left
 			{
 				return {found: true, jumpPoint: currentNode};
 			}
@@ -286,10 +271,6 @@ class JPS implements IPathfinder
 	
 	function JumpDiagonal(x_:Int, y_:Int, dx_:Int, dy_:Int, length_:Int):JumpResult
 	{
-		if (y_ < 0 || y_ >= map.GetHeight() || x_ < 0 || x_ >= map.GetWidth())
-		{
-			return {found: false, jumpPoint: null};
-		}
 		
 		//var endTile_:Int = x_ + (length_ * dx_);
 		/*
@@ -307,27 +288,29 @@ class JPS implements IPathfinder
 		var currentY:Int = y_;
 		
 		#if debugging
-		DebugLogger.Assert((currentX < 0) || (currentX >= map.GetWidth()), "JPS:JumpDiagonal: currentX outside of bounds: " + currentX);
-		DebugLogger.Assert((currentY < 0) || (currentY >= map.GetHeight()), "JPS:JumpDiagonal: currentY outside of bounds: " + currentY);
 		DebugLogger.Assert(incrementAmount < 0, "JPS:JumpDiagonal: incrementAmount is out of bounds: " + incrementAmount);
 		#end
 		
-		for (i in 0...incrementAmount)
+		while (currentY >= 0 && currentY < map.GetHeight() && currentX >= 0 && currentX < map.GetWidth())
 		{
 			var currentNode:Node = map.GetNodeByIndex(currentX, currentY);
 			#if debugging
-			DebugLogger.Assert(currentNode == null, "JPS:JumpDiagonal: currentNode is null: " + currentX + " _ " + currentY);
 			DebugLogger.GetInstance().Print("JumpDiagonal: on node: " + currentX + " _ " + currentY  + " with direction: " + dx_ + " _ " + dy_ + " and the node is !null: " + (currentNode != null));
 			#end
 			
 			//check to see if current node is traversable
-			if (!currentNode.GetTraversable() || (currentNode.searched == true && map.GetNodeByIndex(currentX - dx_, currentY - dy_).GetPathCost() + 1 >= currentNode.GetPathCost()))
+			if ((currentY < 0 || currentY >= map.GetHeight() || currentX < 0 || currentX >= map.GetWidth()) || 
+			!currentNode.GetTraversable() ||
+			(currentNode.searched == true && map.GetNodeByIndex(currentX - dx_, currentY - dy_).GetPathCost() + 1 >= currentNode.GetPathCost()))
 			{
 				// we hit a dead end
 				return {found: false, jumpPoint: null};
 			}
 			
 			currentNode.SetParent(map.GetNodeByIndex(currentX - dx_, currentY - dy_));
+			#if debugging
+			DebugLogger.GetInstance().SetParent(currentNode, map.GetNodeByIndex(currentX - dx_, currentY - dy_));
+			#end
 			currentNode.searched = true;
 			currentNode.SetPathCost(currentNode.GetParent().GetPathCost() + 1.4);
 			
@@ -341,8 +324,9 @@ class JPS implements IPathfinder
 			
 			// check to see if the current node has a forced neighbour
 			if ((currentNode == endNode) ||
-			(!map.GetNodeByIndex(currentX - dx_, currentY).GetTraversable() && map.GetNodeByIndex(currentX - dx_, currentY + dy_).GetTraversable()) &&
-			(!map.GetNodeByIndex(currentX, currentY - dy_).GetTraversable() && map.GetNodeByIndex(currentX + dx_, currentY - dy_).GetTraversable()))
+			((currentY + dy_ >= 0 && currentY + dy_ < map.GetHeight() && currentX + dx_ >= 0 && currentX + dx_ < map.GetWidth()) && 
+			((!map.GetNodeByIndex(currentX - dx_, currentY).GetTraversable() && map.GetNodeByIndex(currentX - dx_, currentY + dy_).GetTraversable()) &&
+			(!map.GetNodeByIndex(currentX, currentY - dy_).GetTraversable() && map.GetNodeByIndex(currentX + dx_, currentY - dy_).GetTraversable()))))
 			{
 				return {found: true, jumpPoint: currentNode};
 			}

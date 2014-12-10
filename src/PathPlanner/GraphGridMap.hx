@@ -15,15 +15,37 @@ import de.polygonal.ds.HashTable;
  * This class stores a rectangular grid map.
  * Additional neighbours are added to nodes through a hashmap, with each node being a key.
  */
+
+@:nativeGen
+class IndexOfNode
+{
+	public var contained:Bool;
+	public var x:Int;
+	public var y:Int;
+	
+	public function new(contained_:Bool, x_:Int, y_:Int)
+	{
+		contained = contained_;
+		x = x_;
+		y = y_;
+	}
+}
+ 
 class GraphGridMap implements IGraphStructure
 {
+	@:protected
 	var width:Int = 0;
+	@:protected
 	var height:Int = 0;
+	@:protected
 	var nodeWidth:Int = 0;
+	@:protected
 	var nodeHeight:Int = 0;
 	
+	@:protected
 	var map:Array<Array<Node>>;
 	
+	@:protected
 	var neighbourHashTable:HashTable < Node, Array<DistanceNode> > ;
 	
 	public function new(width_:Int, height_:Int, nodeWidth_:Int, nodeHeight_:Int) 
@@ -110,8 +132,8 @@ class GraphGridMap implements IGraphStructure
 			return null;
 		}
 		
-		var x:Int = nodeIndex.index.x;
-		var y:Int = nodeIndex.index.y;
+		var x:Int = nodeIndex.x;
+		var y:Int = nodeIndex.y;
 		
 		var neighbours:Array<DistanceNode> = new Array<DistanceNode>();
 		
@@ -170,8 +192,8 @@ class GraphGridMap implements IGraphStructure
 			return null;
 		}
 		
-		var x:Int = nodeIndex.index.x;
-		var y:Int = nodeIndex.index.y;
+		var x:Int = nodeIndex.x;
+		var y:Int = nodeIndex.y;
 		
 		var neighbours:Array<Node> = new Array<Node>();
 		
@@ -194,11 +216,11 @@ class GraphGridMap implements IGraphStructure
 		return x_ >= 0 && y_ >= 0 && x_ < width && y_ < height ? map[x_][y_] : null;
 	}
 	
-	public function GetIndexOfNode(node_:Node)
+	public function GetIndexOfNode(node_:Node):IndexOfNode
 	{
 		var indexX:Int = cast(node_.GetX() / nodeWidth, Int);
 		var indexY:Int = cast(node_.GetY() / nodeHeight, Int);
-		return { contained: map[indexX][indexY] == node_, index: { x: indexX, y: indexY }};
+		return new IndexOfNode(map[indexX][indexY] == node_, indexX, indexY);
 	}
 	
 	/*
