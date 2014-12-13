@@ -2,7 +2,8 @@ package pathPlanner.test;
 
 import haxe.io.Eof;
 import haxe.io.Path;
-import haxe.macro.MacroStringTools;
+import haxe.Timer;
+
 import pathPlanner.IPathfinder;
 import pathPlanner.Node;
 import pathPlanner.test.Main.PathResult;
@@ -30,6 +31,11 @@ class Main
 	
 	public function new()
 	{
+		
+		var s = Timer.stamp();
+		var r = PathUtility.CTZ(61624);
+		trace((Timer.stamp() - s) * 1000000 + " _ " + r);
+		
 		#if debugging
 		//DebugLogger.GetInstance().SetLoggingFunction(Print);
 		#end
@@ -43,13 +49,13 @@ class Main
 		
 		//ComparePath( GetPath(pathfinder, paths[21], map), GetPath(jps, paths[21], map) , 0.1);
 		
-		var i = 0;
+		/*var i = 0;
 		for (path in paths)
 		{
 			trace("looking through: " + i++ + " _ " + path.start.GetX() + "," + path.start.GetY() + " t: " + path.start.GetTraversable() + " _ " + path.end.GetX() + "," + path.end.GetY() + " t: " + path.end.GetTraversable());
 			ComparePath( GetPath(pathfinder, path, map), GetPath(jps, path, map) , 0.4);
 			//GetPath(jps, path, map); // currently using GetPath on just the A* algorithm to determine whether a scenario is viable
-		}
+		}*/
 	}
 	
 	public function PrintPath(pathStruct_:PathResult)
