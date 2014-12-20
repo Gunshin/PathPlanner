@@ -3,6 +3,8 @@ package pathPlanner.test;
 import haxe.io.Eof;
 import haxe.io.Path;
 import haxe.Timer;
+import pathPlanner.GraphGridMapMinimalist;
+import pathPlanner.PathplannerParameter;
 
 import pathPlanner.IPathfinder;
 import pathPlanner.Node;
@@ -31,20 +33,30 @@ class Main
 	
 	public function new()
 	{
-		
+		/*var num:haxe.Int32 = 61624;
 		var s = Timer.stamp();
-		var r = PathUtility.CTZ(61624);
+		var r = PathUtility.CTZ(num);
+		//trace(StringTools.hex(num));
 		trace((Timer.stamp() - s) * 1000000 + " _ " + r);
+		trace((num >> 2) & 1);*/
+		
+		var graph:GraphGridMapMinimalist = new GraphGridMapMinimalist(64, 64, false);
+		graph.SetTraversableTrue(32, 0);
+		trace(graph.GetTraversable(32, 0));
+		
+		var rotated:GraphGridMapMinimalist = graph.RotateMap();
+		trace(rotated.GetTraversable(0, 32));
 		
 		#if debugging
 		//DebugLogger.GetInstance().SetLoggingFunction(Print);
 		#end
 		
-		var pathfinder:IPathfinder = new AStar();
-		var jps:IPathfinder = new JPS();
-		
 		var map = LoadMap("resources/DragonAgeMaps/brc100d.map");
 		var paths = LoadScenarios("resources/DragonAgeScenarios/brc100d.map.scen", map, "	");
+		
+		var pathfinder:IPathfinder = new AStar();
+		var jps:IPathfinder = new JPS(map);
+		
 		//var paths = GeneratePaths(map, 50);
 		
 		//ComparePath( GetPath(pathfinder, paths[21], map), GetPath(jps, paths[21], map) , 0.1);
@@ -72,8 +84,10 @@ class Main
 	
 	public function GetPath(pathfinder_:IPathfinder, path_:Path, map_:GraphGridMap):PathResult
 	{
-		
-		var path:Array<Node> = pathfinder_.FindPath(path_.start, path_.end, 
+		var pathParam = new PathplannerParameter();
+		pathParam.startNode = path_.start;
+		pathParam.goalNode = path_.end;
+		var path:Array<Node> = pathfinder_.FindPath(pathParam, 
 		function(nodeOne, nodeTwo)
 		{
 			return Math.sqrt(Math.pow(nodeOne.GetX() - nodeTwo.GetX(), 2) + Math.pow(nodeOne.GetY() - nodeTwo.GetY(), 2));

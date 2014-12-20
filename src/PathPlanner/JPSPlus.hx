@@ -1,5 +1,7 @@
 package pathPlanner;
 
+package pathPlanner;
+
 import de.polygonal.ds.PriorityQueue;
 
 #if cs
@@ -12,16 +14,20 @@ typedef JumpResult = { found:Bool, jumpPoint:Node }
  * ...
  * @author Michael Stephens
  */
-class JPS implements IPathfinder 
+class JPSPlus implements IPathfinder 
 {
 	@:protected
-	var map:GraphGridMap;
+	var map:GraphGridMapMinimalist;
+	@:protected
+	var mapRotated:GraphGridMapMinimalist;
+	
 	@:protected
 	var endNode:Node;
 		
-	public function new(map_:GraphGridMap)
+	public function new(map_:GraphGridMapMinimalist)
 	{
 		map = map_;
+		mapRotated = map.RotateMap();
 	}
 	
 	#if cs
@@ -41,23 +47,21 @@ class JPS implements IPathfinder
 			return null;
 		}
 		
-		map.ResetForPathplanning(); //TODO: correct Node implementation
-		
 		#if debugging
-		DebugLogger.Assert(startNode.GetParent() != null, "warning, map not correctly reset, start node has parent");
-		DebugLogger.Assert(endNode.GetParent() != null, "warning, map not correctly reset, end node has parent");
+		DebugLogger.Assert(startNode_.GetParent() != null, "warning, map not correctly reset, start node has parent");
+		DebugLogger.Assert(endNode_.GetParent() != null, "warning, map not correctly reset, end node has parent");
 		DebugLogger.GetInstance().ResetActionList();
 		#end
 		
-		startNode.SetParent(null);
-		startNode.searched = true; // if we dont do this, the algorithm attempts to search the start node again which results in a cyclic reference
+		startNode_.SetParent(null);
+		startNode_.searched = true; // if we dont do this, the algorithm attempts to search the start node again which results in a cyclic reference
 		
 		var open:PriorityQueue<Node> = new PriorityQueue<Node>(true, 128);
 		var closed:PriorityQueue<Node> = new PriorityQueue<Node>(true, 128);
 		
-		open.enqueue(startNode);
+		open.enqueue(startNode_);
 		#if debugging
-		DebugLogger.GetInstance().AddToOpen(startNode);
+		DebugLogger.GetInstance().AddToOpen(startNode_);
 		#end
 		
 		while (!open.isEmpty())
@@ -65,9 +69,9 @@ class JPS implements IPathfinder
 			
 			var currentNode:Node = open.dequeue();
 			
-			if (currentNode == endNode) //if we have the goal, return?
+			if (currentNode == endNode_) //if we have the goal, return?
 			{
-				return PathUtility.ReconstructPath(endNode);
+				return PathUtility.ReconstructPath(endNode_);
 			}
 			
 			closed.enqueue(currentNode);

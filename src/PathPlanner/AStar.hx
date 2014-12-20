@@ -17,21 +17,20 @@ class AStar implements IPathfinder
 {
 	public function new()
 	{
-		
 	}
 	
 	#if cs
-	public function FindPath(startNode_:Node, endNode_:Node, heuristicFunction_:cs.system.Func_3<Node,Node,Float>):Array<Node>
+	public function FindPath(param_:PathplannerParameter, heuristicFunction_:cs.system.Func_3<Node,Node,Float>):Array<Node>
 	#else
-	public function FindPath(startNode_:Node, endNode_:Node, heuristicFunction_: Node -> Node -> Float):Array<Node>
+	public function FindPath(param_:PathplannerParameter, heuristicFunction_: Node -> Node -> Float):Array<Node>
 	#end
 	{
-		startNode_.SetParent(null);
+		param_.startNode.SetParent(null);
 		
 		var open:PriorityQueue<Node> = new PriorityQueue<Node>(true, 128);
 		var closed:PriorityQueue<Node> = new PriorityQueue<Node>(true, 128);
 		
-		open.enqueue(startNode_);
+		open.enqueue(param_.startNode);
 		
 		while (!open.isEmpty())
 		{
@@ -41,9 +40,9 @@ class AStar implements IPathfinder
 			
 			var neighbours:Array<DistanceNode>;
 			
-			if (currentNode == endNode_)
+			if (currentNode == param_.goalNode)
 			{
-				return PathUtility.ReconstructPath(endNode_);
+				return PathUtility.ReconstructPath(param_.goalNode);
 			}
 			else if((neighbours = currentNode.GetNeighbours()).length > 0)
 			{
@@ -51,7 +50,7 @@ class AStar implements IPathfinder
 				{
 					if (neighbours[i] != null && neighbours[i].connectedNode.GetTraversable() == true) // if node is traversable, expand it
 					{
-						Improve(currentNode, neighbours[i], endNode_, open, closed, heuristicFunction_);
+						Improve(currentNode, neighbours[i], param_.goalNode, open, closed, heuristicFunction_);
 					}
 					
 				}

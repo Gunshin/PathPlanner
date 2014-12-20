@@ -5,3 +5,6 @@ could potentially try adding the neighbours of the expanding node to the open li
 so we expand in the correct direction without having to explore all possibilities of that node.
 
 when expanding, move forward first then check backwards if the previous node is a jump point.
+
+GraphGridMapMinimalist:
+decide on full implementation. currently does not inherit from IGraphStructure

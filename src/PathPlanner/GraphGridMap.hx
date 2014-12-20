@@ -240,22 +240,22 @@ class GraphGridMap implements IGraphStructure
 		}
 	}
 	
-	public function GetWidth():Int
+	public inline function GetWidth():Int
 	{
 		return width;
 	}
 	
-	public function GetHeight():Int
+	public inline function GetHeight():Int
 	{
 		return height;
 	}
 	
-	public function GetNodeWidth():Int
+	public inline function GetNodeWidth():Int
 	{
 		return nodeWidth;
 	}
 	
-	public function GetNodeHeight():Int
+	public inline function GetNodeHeight():Int
 	{
 		return nodeHeight;
 	}

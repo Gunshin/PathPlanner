@@ -1,4 +1,5 @@
 package pathPlanner;
+import haxe.Int32;
 
 /**
  * ...
@@ -54,21 +55,24 @@ class PathUtility
 		return -1;
 	}
 	
-	public static inline function CLZ(number:Int):Int
+	/*
+	 * Count Trailing Zeros assuming we are looking at data directly in memory assuming Big Endian
+	 */
+	public static inline function CTZ(number:Int32):Int32
 	{
 		#if cpp
-		var x:Int = number;
+		var x:Int32 = number;
 		untyped __cpp__('unsigned long index');
 		untyped __cpp__('_BitScanForward(&index, x)'); // special microsoft compiler intrinsic
 		return untyped __cpp__('index');
 		#else
-		var x:Int = number;
+		var x:Int32 = number;
 		if (x == 0)
 		{
 			return 32;
 		}
 		
-		var n:Int = 0;
+		var n:Int32 = 0;
 		if ((x & 0x0000FFFF) == 0)
 		{
 			n = n + 16;
@@ -97,10 +101,13 @@ class PathUtility
 		#end
 	}
 	
-	public static inline function CTZ(number:Int):Int
+	/*
+	 * Count Trailing Zeros assuming we are looking at data directly in memory assuming Big Endian
+	 */
+	public static inline function CLZ(number:Int32):Int32
 	{
 		#if cpp
-		var n:UInt = number;
+		var n:Int32 = number;
 		return untyped __cpp__('__lzcnt(n)'); // special microsoft compiler intrinsic
 		#else
 		number |= (number >> 1);
@@ -112,7 +119,7 @@ class PathUtility
 		#end
 	}
 	
-	static inline function Ones(x:Int):Int
+	static inline function Ones(x:Int32):Int32
 	{
         x -= ((x >> 1) & 0x55555555);
         x = (((x >> 2) & 0x33333333) + (x & 0x33333333));
