@@ -1,12 +1,13 @@
 package pathPlanner;
 
+import cpp.vm.Debugger;
 import de.polygonal.ds.PriorityQueue;
 
 #if cs
 import cs.Lib;
 #end
 
-typedef JumpResult = { found:Bool, jumpPoint:Node }
+//typedef JumpResult = { found:Bool, jumpPoint:Node }
 
 /**
  * ...
@@ -18,6 +19,15 @@ class JPS implements IPathfinder
 	var map:GraphGridMap;
 	@:protected
 	var endNode:Node;
+	
+	var verticalTimer:DebugRunningTimer = new DebugRunningTimer();
+	var horizontalTimer:DebugRunningTimer = new DebugRunningTimer();
+	var diagonalTimer:DebugRunningTimer = new DebugRunningTimer();
+	var jumpTimer:DebugRunningTimer = new DebugRunningTimer();
+	var addTimer:DebugRunningTimer = new DebugRunningTimer();
+	var improveTimer:DebugRunningTimer = new DebugRunningTimer();
+	var findTimer:DebugRunningTimer = new DebugRunningTimer();
+	var reconstructTimer:DebugRunningTimer = new DebugRunningTimer();
 		
 	public function new(map_:GraphGridMap)
 	{
@@ -30,6 +40,17 @@ class JPS implements IPathfinder
 	public function FindPath(param_:PathplannerParameter, heuristicFunction_: Node -> Node -> Float):Array<Node>
 	#end
 	{
+		verticalTimer.Reset();
+		horizontalTimer.Reset();
+		diagonalTimer.Reset();
+		jumpTimer.Reset();
+		addTimer.Reset();
+		improveTimer.Reset();
+		findTimer.Reset();
+		reconstructTimer.Reset();
+		
+		findTimer.Start();
+		
 		var startNode:Node;
 		
 		startNode = param_.startNode != null ? param_.startNode : map.GetNodeByIndex(param_.startX, param_.startY);
@@ -46,6 +67,8 @@ class JPS implements IPathfinder
 		#if debugging
 		DebugLogger.Assert(startNode.GetParent() != null, "warning, map not correctly reset, start node has parent");
 		DebugLogger.Assert(endNode.GetParent() != null, "warning, map not correctly reset, end node has parent");
+		#end
+		#if action_output
 		DebugLogger.GetInstance().ResetActionList();
 		#end
 		
@@ -53,10 +76,10 @@ class JPS implements IPathfinder
 		startNode.searched = true; // if we dont do this, the algorithm attempts to search the start node again which results in a cyclic reference
 		
 		var open:PriorityQueue<Node> = new PriorityQueue<Node>(true, 128);
-		var closed:PriorityQueue<Node> = new PriorityQueue<Node>(true, 128);
+		//var closed:PriorityQueue<Node> = new PriorityQueue<Node>(true, 128);
 		
 		open.enqueue(startNode);
-		#if debugging
+		#if action_output
 		DebugLogger.GetInstance().AddToOpen(startNode);
 		#end
 		
@@ -67,15 +90,37 @@ class JPS implements IPathfinder
 			
 			if (currentNode == endNode) //if we have the goal, return?
 			{
-				return PathUtility.ReconstructPath(endNode);
+				findTimer.Stop();
+				
+				trace("jps __________________________________");
+				trace("vert: " + (verticalTimer.GetCurrentTotalTime() * 1000000));
+				trace("hori: " + (horizontalTimer.GetCurrentTotalTime() * 1000000));
+				trace("diag: " + (diagonalTimer.GetCurrentTotalTime() * 1000000));
+				trace("jump: " + (jumpTimer.GetCurrentTotalTime() * 1000000));
+				trace("add: " + (addTimer.GetCurrentTotalTime() * 1000000));
+				trace("improve: " + (improveTimer.GetCurrentTotalTime() * 1000000));
+				trace("find: " + (findTimer.GetCurrentTotalTime() * 1000000));
+				
+				reconstructTimer.Start();
+				var path = PathUtility.ReconstructPath(endNode);
+				reconstructTimer.Stop();
+				
+				trace("reconstruct: " + (reconstructTimer.GetCurrentTotalTime() * 1000000));
+				
+				return path;
 			}
 			
-			closed.enqueue(currentNode);
-			#if debugging
+			/*closed.enqueue(currentNode);
+			#if action_output
 			DebugLogger.GetInstance().AddToClosed(currentNode);
-			#end
-			
-			Improve(currentNode, open, heuristicFunction_);
+			#end*/
+			improveTimer.Start();
+			//haxe.Timer.measure(function()
+			//{
+				Improve(currentNode, open, heuristicFunction_);
+			//});
+			improveTimer.Stop();
+			//trace("improve took: " + (improveTimer.Stop() * 1000000));
 		}
 		
 		return null;// no path is found
@@ -93,39 +138,43 @@ class JPS implements IPathfinder
 		DebugLogger.Assert(currentNode_ == null, "JPS:Improve: currentNode is null");
 		DebugLogger.Assert(open_ == null, "JPS:Improve: open_ is null");
 		DebugLogger.Assert(heuristicFunction_ == null, "JPS:Improve: heuristicFunction_ is null");
-		
+		#end
+		#if action_output
 		DebugLogger.GetInstance().Expand(currentNode_);
 		#end
 		
 		var neighbours:Array<Node> = map.GetRawNeighbours(currentNode_);
 		for (i in 0...neighbours.length)
 		{
-			if (neighbours[i] != null)
+			if (neighbours[i] != null && neighbours[i].searched == false)
 			{
+				jumpTimer.Start();
 				var result = Jump(neighbours[i], currentNode_, 0);
-				if (result.found)
+				jumpTimer.Stop();
+				if (result != null)
 				{
+					addTimer.Start();
 					// for now
 					#if cs
-					result.jumpPoint.heuristic = heuristicFunction_.Invoke(result.jumpPoint, endNode);
+					result.jumpPoint.heuristic = heuristicFunction_.Invoke(result, endNode);
 					#else
-					result.jumpPoint.heuristic = heuristicFunction_(result.jumpPoint, endNode);
+					result.heuristic = heuristicFunction_(result, endNode);
 					#end
-					result.jumpPoint.priority = result.jumpPoint.GetPathCost() + result.jumpPoint.heuristic;
+					result.priority = result.GetPathCost() + result.heuristic;
 					
-					open_.enqueue(result.jumpPoint);
+					open_.enqueue(result);
 					
-					#if debugging
-					DebugLogger.GetInstance().AddToOpen(result.jumpPoint);
+					#if action_output
+					DebugLogger.GetInstance().AddToOpen(result);
 					#end
-					
+					addTimer.Stop();
 				}
 			}
 		}
 		
 	}
 	
-	function Jump(node_:Node, parentNode_:Node, length_:Int):JumpResult
+	function Jump(node_:Node, parentNode_:Node, length_:Int):Node
 	{
 		#if debugging
 		DebugLogger.Assert(node_ == null, "JPS:Jump: node_ is null");
@@ -142,32 +191,38 @@ class JPS implements IPathfinder
 		
 		if (dx != 0 && dy != 0) // check diag first since we apply a horizontal and vertical search on the node inside JumpDiagonal anyways (dont need to do it twice)
 		{
+			diagonalTimer.Start();
 			var result = JumpDiagonal(x, y, dx, dy, length_);
-			if (result.found)
+			diagonalTimer.Stop();
+			if (result != null)
 			{
 				return result;
 			}
 		}
 		else if (dx != 0)
 		{
+			horizontalTimer.Start();
 			var result = JumpHorizontal(x, y, dx, length_, true);
-			if (result.found)
+			horizontalTimer.Stop();
+			if (result != null)
 			{
 				return result;
 			}
 		}else if (dy != 0)
 		{
+			verticalTimer.Start();
 			var result = JumpVertical(x, y, dy, length_, true);
-			if (result.found)
+			verticalTimer.Stop();
+			if (result != null)
 			{
 				return result;
 			}
 		}
 		
-		return {found: false, jumpPoint: null};
+		return null;
 	}
 	
-	function JumpHorizontal(x_:Int, y_:Int, dx_:Int, length_:Int, expanding_:Bool):JumpResult
+	function JumpHorizontal(x_:Int, y_:Int, dx_:Int, length_:Int, expanding_:Bool):Node
 	{
 		
 		//var endTile_:Int = x_ + (length_ * dx_);
@@ -191,13 +246,13 @@ class JPS implements IPathfinder
 			(currentNode.searched == true && map.GetNodeByIndex(currentX - dx_, y_).GetPathCost() + 1 >= currentNode.GetPathCost()))
 			{
 				// we hit a dead end
-				return {found: false, jumpPoint: null};
+				return null;
 			}
 			
 			if (expanding_)
 			{
 				currentNode.SetParent(map.GetNodeByIndex(currentX - dx_, y_));
-				#if debugging
+				#if action_output
 				DebugLogger.GetInstance().SetParent(currentNode, map.GetNodeByIndex(currentX - dx_, y_));
 				#end
 				currentNode.searched = true;
@@ -210,16 +265,16 @@ class JPS implements IPathfinder
 			((y_ + 1 < map.GetHeight()) && (!map.GetNodeByIndex(currentX, y_ + 1).GetTraversable() && map.GetNodeByIndex(currentX + dx_, y_ + 1).GetTraversable()) || // forced neighbour above
 			((y_ - 1 >= 0) && !map.GetNodeByIndex(currentX, y_ - 1).GetTraversable() && map.GetNodeByIndex(currentX + dx_, y_ - 1).GetTraversable()))))// forced neighbour below
 			{
-				return {found: true, jumpPoint: currentNode};
+				return currentNode;
 			}
 			
 			currentX += dx_;
 		}
 	
-		return {found: false, jumpPoint: null}; // we hit the end of the map, either 0 or map.width
+		return null; // we hit the end of the map, either 0 or map.width
 	}
 	
-	function JumpVertical(x_:Int, y_:Int, dy_:Int, length_:Int, expanding_:Bool):JumpResult
+	function JumpVertical(x_:Int, y_:Int, dy_:Int, length_:Int, expanding_:Bool):Node
 	{
 		
 		//var endTile_:Int = x_ + (length_ * dx_);
@@ -243,13 +298,13 @@ class JPS implements IPathfinder
 			(currentNode.searched == true && map.GetNodeByIndex(x_, currentY - dy_).GetPathCost() + 1 >= currentNode.GetPathCost()))
 			{
 				// we hit a dead end
-				return {found: false, jumpPoint: null};
+				return null;
 			}
 			
 			if (expanding_)
 			{
 				currentNode.SetParent(map.GetNodeByIndex(x_, currentY - dy_));
-				#if debugging
+				#if action_output
 				DebugLogger.GetInstance().SetParent(currentNode, map.GetNodeByIndex(x_, currentY - dy_));
 				#end
 				currentNode.searched = true;
@@ -262,16 +317,16 @@ class JPS implements IPathfinder
 			((x_ + 1 < map.GetWidth()) && (!map.GetNodeByIndex(x_ + 1, currentY).GetTraversable() && map.GetNodeByIndex(x_ + 1, currentY + dy_).GetTraversable()) || // forced neighbour right
 			((x_ - 1 >= 0) && (!map.GetNodeByIndex(x_ - 1, currentY).GetTraversable() && map.GetNodeByIndex(x_ - 1, currentY + dy_).GetTraversable())))))// forced neighbour left
 			{
-				return {found: true, jumpPoint: currentNode};
+				return currentNode;
 			}
 			
 			currentY += dy_;
 		}
 	
-		return {found: false, jumpPoint: null}; // we hit the end of the map, either 0 or map.height
+		return null; // we hit the end of the map, either 0 or map.height
 	}
 	
-	function JumpDiagonal(x_:Int, y_:Int, dx_:Int, dy_:Int, length_:Int):JumpResult
+	function JumpDiagonal(x_:Int, y_:Int, dx_:Int, dy_:Int, length_:Int):Node
 	{
 		
 		//var endTile_:Int = x_ + (length_ * dx_);
@@ -306,11 +361,11 @@ class JPS implements IPathfinder
 			(currentNode.searched == true && map.GetNodeByIndex(currentX - dx_, currentY - dy_).GetPathCost() + 1 >= currentNode.GetPathCost()))
 			{
 				// we hit a dead end
-				return {found: false, jumpPoint: null};
+				return null;
 			}
 			
 			currentNode.SetParent(map.GetNodeByIndex(currentX - dx_, currentY - dy_));
-			#if debugging
+			#if action_output
 			DebugLogger.GetInstance().SetParent(currentNode, map.GetNodeByIndex(currentX - dx_, currentY - dy_));
 			#end
 			currentNode.searched = true;
@@ -319,9 +374,9 @@ class JPS implements IPathfinder
 			//check horizontal + vertical directions
 			var horizontal = JumpHorizontal(currentX + dx_, currentY, dx_, length_, false);
 			var vertical = JumpVertical(currentX, currentY + dy_, dy_, length_, false);
-			if (horizontal.found || vertical.found)
+			if (horizontal != null || vertical != null)
 			{
-				return { found: true, jumpPoint: currentNode };// , horizontal.found ? horizontal.jumpPoints[0] : vertical.jumpPoints[0]] };
+				return currentNode;// , horizontal.found ? horizontal.jumpPoints[0] : vertical.jumpPoints[0]] };
 			}
 			
 			// check to see if the current node has a forced neighbour
@@ -330,14 +385,14 @@ class JPS implements IPathfinder
 			((!map.GetNodeByIndex(currentX - dx_, currentY).GetTraversable() && map.GetNodeByIndex(currentX - dx_, currentY + dy_).GetTraversable()) &&
 			(!map.GetNodeByIndex(currentX, currentY - dy_).GetTraversable() && map.GetNodeByIndex(currentX + dx_, currentY - dy_).GetTraversable()))))
 			{
-				return {found: true, jumpPoint: currentNode};
+				return currentNode;
 			}
 			
 			currentX += dx_;
 			currentY += dy_;
 		}
 	
-		return {found: false, jumpPoint: null}; // we hit the end of the map, either 0 or map.height
+		return null; // we hit the end of the map, either 0 or map.height
 		
 	}
 	

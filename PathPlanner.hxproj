@@ -4,7 +4,7 @@
   <output>
     <movie outputType="Application" />
     <movie input="" />
-    <movie path="bin/cpp" />
+    <movie path="bin\cpp" />
     <movie fps="0" />
     <movie width="0" />
     <movie height="0" />
@@ -24,7 +24,7 @@
     <option noInlineOnDebug="False" />
     <option mainClass="pathPlanner.test.Main" />
     <option enabledebug="False" />
-    <option additional="-lib polygonal-ds&#xA;-D debugging" />
+    <option additional="-lib polygonal-ds&#xA;&#xA;" />
   </build>
   <!-- haxelib libraries -->
   <haxelib>

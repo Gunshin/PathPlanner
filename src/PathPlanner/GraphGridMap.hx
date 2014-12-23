@@ -43,7 +43,7 @@ class GraphGridMap implements IGraphStructure
 	var nodeHeight:Int = 0;
 	
 	@:protected
-	var map:Array<Array<Node>>;
+	var map:Array<Node>;
 	
 	@:protected
 	var neighbourHashTable:HashTable < Node, Array<DistanceNode> > ;
@@ -57,14 +57,13 @@ class GraphGridMap implements IGraphStructure
 		
 		neighbourHashTable = new HashTable < Node, Array<DistanceNode> > (4, 32);
 		
-		map = new Array<Array<Node>>();
+		map = new Array<Node>();
 		
 		for (i in 0...width)
 		{
-			map[i] = new Array<Node>();
 			for (j in 0...height)
 			{
-				map[i][j] = new Node(i * nodeWidth, j * nodeWidth, true, this);
+				map[i + j * width] = new Node(i * nodeWidth, j * nodeWidth, true, this);
 			}
 		}
 	}
@@ -139,14 +138,14 @@ class GraphGridMap implements IGraphStructure
 		
 		// do it backwards since i can only assume that the arrays resize based on illegal/overflow access
 		// i have the feeling that whoever made the Array resize, does not resize by +1 each time, but im not going to take the risk.
-		neighbours[7] = x > 0 ? 							new DistanceNode(map[x - 1][y], node_) : null; 	// mid left
-		neighbours[6] = x > 0 && y > 0 ? 					new DistanceNode(map[x - 1][y - 1], node_) : null; // bottom left
-		neighbours[5] = y > 0 ? 							new DistanceNode(map[x][y - 1], node_) : null; 	// bottom mid
-		neighbours[4] = x < width - 1 && y > 0 ? 			new DistanceNode(map[x + 1][y - 1], node_) : null; // bottom right
-		neighbours[3] = x < width - 1 ? 					new DistanceNode(map[x + 1][y], node_) : null; 	// mid right
-		neighbours[2] = x < width - 1 && y < height - 1 ? 	new DistanceNode(map[x + 1][y + 1], node_) : null; // top right
-		neighbours[1] = y < height - 1 ? 					new DistanceNode(map[x][y + 1], node_) : null; 	// top mid
-		neighbours[0] = x > 0 && y < height - 1 ? 			new DistanceNode(map[x - 1][y + 1], node_) : null; // top left
+		neighbours[7] = x > 0 ? 							new DistanceNode(map[(x - 1) + y * width], node_) : null; 	// mid left
+		neighbours[6] = x > 0 && y > 0 ? 					new DistanceNode(map[(x - 1) + (y - 1) * width], node_) : null; // bottom left
+		neighbours[5] = y > 0 ? 							new DistanceNode(map[x + (y - 1) * width], node_) : null; 	// bottom mid
+		neighbours[4] = x < width - 1 && y > 0 ? 			new DistanceNode(map[(x + 1) + (y - 1) * width], node_) : null; // bottom right
+		neighbours[3] = x < width - 1 ? 					new DistanceNode(map[(x + 1) + y * width], node_) : null; 	// mid right
+		neighbours[2] = x < width - 1 && y < height - 1 ? 	new DistanceNode(map[(x + 1) + (y + 1) * width], node_) : null; // top right
+		neighbours[1] = y < height - 1 ? 					new DistanceNode(map[x + (y + 1) * width], node_) : null; 	// top mid
+		neighbours[0] = x > 0 && y < height - 1 ? 			new DistanceNode(map[(x - 1) + (y + 1) * width], node_) : null; // top left
 		
 		return neighbours;
 	}
@@ -199,28 +198,28 @@ class GraphGridMap implements IGraphStructure
 		
 		// do it backwards since i can only assume that the arrays resize based on illegal/overflow access
 		// i have the feeling that whoever made the Array resize, does not resize by +1 each time, but im not going to take the risk.
-		neighbours[7] = x > 0 ? 							map[x - 1][y] 		: null; // mid left
-		neighbours[6] = x > 0 && y > 0 ? 					map[x - 1][y - 1] 	: null; // bottom left
-		neighbours[5] = y > 0 ? 							map[x][y - 1] 		: null; // bottom mid
-		neighbours[4] = x < width - 1 && y > 0 ? 			map[x + 1][y - 1] 	: null; // bottom right
-		neighbours[3] = x < width - 1 ? 					map[x + 1][y] 		: null; // mid right
-		neighbours[2] = x < width - 1 && y < height - 1 ? 	map[x + 1][y + 1] 	: null; // top right
-		neighbours[1] = y < height - 1 ? 					map[x][y + 1] 		: null; // top mid
-		neighbours[0] = x > 0 && y < height - 1 ? 			map[x - 1][y + 1] 	: null; // top left
+		neighbours[7] = x > 0 ? 							map[(x - 1) + y * width] 		: null; // mid left
+		neighbours[6] = x > 0 && y > 0 ? 					map[(x - 1) + (y - 1) * width] 	: null; // bottom left
+		neighbours[5] = y > 0 ? 							map[x + (y - 1) * width] 		: null; // bottom mid
+		neighbours[4] = x < width - 1 && y > 0 ? 			map[(x + 1) + (y - 1) * width] 	: null; // bottom right
+		neighbours[3] = x < width - 1 ? 					map[(x + 1) + y * width] 		: null; // mid right
+		neighbours[2] = x < width - 1 && y < height - 1 ? 	map[(x + 1) + (y + 1) * width] 	: null; // top right
+		neighbours[1] = y < height - 1 ? 					map[x + (y + 1) * width] 		: null; // top mid
+		neighbours[0] = x > 0 && y < height - 1 ? 			map[(x - 1) + (y + 1) * width] 	: null; // top left
 		
 		return neighbours;
 	}
 	
-	public function GetNodeByIndex(x_:Int, y_:Int):Node
+	public inline function GetNodeByIndex(x_:Int, y_:Int):Node
 	{
-		return x_ >= 0 && y_ >= 0 && x_ < width && y_ < height ? map[x_][y_] : null;
+		return x_ >= 0 && y_ >= 0 && x_ < width && y_ < height ? map[x_ + y_ * width] : null;
 	}
 	
-	public function GetIndexOfNode(node_:Node):IndexOfNode
+	public inline function GetIndexOfNode(node_:Node):IndexOfNode
 	{
 		var indexX:Int = cast(node_.GetX() / nodeWidth, Int);
 		var indexY:Int = cast(node_.GetY() / nodeHeight, Int);
-		return new IndexOfNode(map[indexX][indexY] == node_, indexX, indexY);
+		return new IndexOfNode(map[indexX + indexY * width] == node_, indexX, indexY);
 	}
 	
 	/*
@@ -232,10 +231,10 @@ class GraphGridMap implements IGraphStructure
 		{
 			for (j in 0...height)
 			{
-				map[i][j].SetParent(null);
-				map[i][j].searched = false;
-				map[i][j].SetPathCost(0);
-				map[i][j].heuristic = 0;
+				map[i + j * width].SetParent(null);
+				map[i + j * width].searched = false;
+				map[i + j * width].SetPathCost(0);
+				map[i + j * width].heuristic = 0;
 			}
 		}
 	}
