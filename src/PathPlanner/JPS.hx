@@ -66,8 +66,8 @@ class JPS implements IPathfinder
 		searchedMap.SetMap(false);
 		
 		#if debugging
-		DebugLogger.Assert(startNode.GetParent() != null, "warning, map not correctly reset, start node has parent");
-		DebugLogger.Assert(endNode.GetParent() != null, "warning, map not correctly reset, end node has parent");
+		//DebugLogger.Assert(startNode.GetParent() != null, "warning, map not correctly reset, start node has parent");
+		//DebugLogger.Assert(endNode.GetParent() != null, "warning, map not correctly reset, end node has parent");
 		#end
 		#if action_output
 		DebugLogger.GetInstance().ResetActionList();
@@ -83,7 +83,7 @@ class JPS implements IPathfinder
 		// the start node is being treat as a jump point, so that its neighbours are added to the list
 		ExpandJumpPoint(startNode, open, heuristicFunction_);
 		#if action_output
-		DebugLogger.GetInstance().AddToOpen(startNode);
+		DebugLogger.GetInstance().Expand(startNode);
 		#end
 		
 		while (!open.isEmpty())
@@ -95,8 +95,8 @@ class JPS implements IPathfinder
 			{
 				
 				
-				/*trace("jps __________________________________");
-				trace("vert: " + (verticalTimer.GetCurrentTotalTime() * 1000000));
+				//trace("jps __________________________________");
+				/*trace("vert: " + (verticalTimer.GetCurrentTotalTime() * 1000000));
 				trace("hori: " + (horizontalTimer.GetCurrentTotalTime() * 1000000));
 				trace("diag: " + (diagonalTimer.GetCurrentTotalTime() * 1000000));
 				trace("jump: " + (jumpTimer.GetCurrentTotalTime() * 1000000));
@@ -120,7 +120,6 @@ class JPS implements IPathfinder
 			Improve(currentNode, open, heuristicFunction_);
 			//improveTimer.Stop();
 		}
-		
 		return null;// no path is found
 	}
 	
@@ -170,34 +169,32 @@ class JPS implements IPathfinder
 		var neighbours:Array<Node> = map.GetRawNeighbours(jumpPoint_);
 		for (i in 0...neighbours.length)
 		{
-			var index = map.GetIndexOfNode(neighbours[i]);
-			if (neighbours[i] != null && neighbours[i].GetTraversable() == true && searchedMap.GetTraversable(index.x, index.y) == false)
+			if (neighbours[i] != null)
 			{
-				// map.GetRawNeighbours(jumpPoint_); returns an array of neighbours with every even index being a corner neighbour
-				if (i % 2 == 0)
+				var traverseCost = (i % 2) == 0 ? 1.4 : 1;
+				var index = map.GetIndexOfNode(neighbours[i]);
+				if (neighbours[i].GetTraversable() == true && 
+				(searchedMap.GetTraversable(index.x, index.y) == false || map.GetNodeByIndex(index.x, index.y).GetPathCost() > jumpPoint_.GetPathCost() + traverseCost))
 				{
-					neighbours[i].SetPathCost(jumpPoint_.GetPathCost() + 1.4);
+					// map.GetRawNeighbours(jumpPoint_); returns an array of neighbours with every even index being a corner neighbour
+					neighbours[i].SetPathCost(jumpPoint_.GetPathCost() + traverseCost);
+					
+					// for now
+					#if cs
+					neighbours[i].heuristic = heuristicFunction_.Invoke(neighbours[i], endNode);
+					#else
+					neighbours[i].heuristic = heuristicFunction_(neighbours[i], endNode);
+					#end
+					neighbours[i].priority = neighbours[i].GetPathCost() + neighbours[i].heuristic;
+					
+					neighbours[i].SetParent(jumpPoint_);
+					open_.enqueue(neighbours[i]);
+					
+					#if action_output
+					DebugLogger.GetInstance().SetParent(neighbours[i], jumpPoint_);
+					DebugLogger.GetInstance().AddToOpen(neighbours[i]);
+					#end
 				}
-				else
-				{
-					neighbours[i].SetPathCost(jumpPoint_.GetPathCost() + 1);
-				}
-				
-				// for now
-				#if cs
-				neighbours[i].heuristic = heuristicFunction_.Invoke(neighbours[i], endNode);
-				#else
-				neighbours[i].heuristic = heuristicFunction_(neighbours[i], endNode);
-				#end
-				neighbours[i].priority = neighbours[i].GetPathCost() + neighbours[i].heuristic;
-				
-				neighbours[i].SetParent(jumpPoint_);
-				open_.enqueue(neighbours[i]);
-				
-				#if action_output
-				DebugLogger.GetInstance().SetParent(neighbours[i], jumpPoint_);
-				DebugLogger.GetInstance().AddToOpen(neighbours[i]);
-				#end
 			}
 		}
 		
@@ -366,16 +363,9 @@ class JPS implements IPathfinder
 		 * 
 		 * Also, haxe does not have the standard great for loops inherent in most languages, so we have do do some magic?
 		 */
-		var endTileX:Int = (dx_ > 0) ? map.GetWidth() - 1 : 0;
-		var endTileY:Int = (dy_ > 0) ? map.GetHeight() - 1 : 0;
-		var incrementAmount:Int = ((Math.abs(endTileX - x_) >= Math.abs(endTileY - y_))) ? cast(Math.abs(endTileX - x_), Int) : cast(Math.abs(endTileY - y_), Int);
 		
 		var currentX:Int = x_;
 		var currentY:Int = y_;
-		
-		#if debugging
-		DebugLogger.Assert(incrementAmount < 0, "JPS:JumpDiagonal: incrementAmount is out of bounds: " + incrementAmount);
-		#end
 		
 		while (currentY >= 0 && currentY < map.GetHeight() && currentX >= 0 && currentX < map.GetWidth())
 		{

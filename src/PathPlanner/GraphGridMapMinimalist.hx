@@ -1,6 +1,5 @@
 package pathPlanner;
 import haxe.Int32;
-import haxe.io.BytesData.Unsigned_char__;
 
 /**
  * ...
@@ -37,12 +36,9 @@ class GraphGridMapMinimalist
 	public function SetMap(traversableDefault_:Bool)
 	{
 		var gridValue:Int32 = traversableDefault_ ? ~0 : 0;// all bits set as 1 as assumed traversable
-		for (j in 0...height)
+		for (j in 0...map.length)
 		{
-			for (i in 0...correctedWidth)
-			{
-				map[i + j * height] = gridValue;
-			}
+				map[j] = gridValue;
 		}
 	}
 	
@@ -90,7 +86,7 @@ class GraphGridMapMinimalist
 		return neighbours;
 	}*/
 	
-	public inline function GetTraversable(x_:Int, y_:Int):Bool
+	public function GetTraversable(x_:Int, y_:Int):Bool
 	{
 		
 		#if debugging
@@ -111,7 +107,7 @@ class GraphGridMapMinimalist
 	/*
 	 * SetTraversable is seperated to remove branching within the method so to make it as potentially fast as possible
 	 */
-	public inline function SetTraversableTrue(x_:Int, y_:Int):Void
+	public function SetTraversableTrue(x_:Int, y_:Int):Void
 	{
 		
 		#if debugging
@@ -136,7 +132,7 @@ class GraphGridMapMinimalist
 	/*
 	 * SetTraversable is seperated to remove branching within the method so to make it as potentially fast as possible
 	 */
-	public inline function SetTraversableFalse(x_:Int, y_:Int):Void
+	public function SetTraversableFalse(x_:Int, y_:Int):Void
 	{
 		
 		#if debugging
@@ -160,12 +156,12 @@ class GraphGridMapMinimalist
 	
 	
 	
-	public inline function GetWidth():Int
+	public function GetWidth():Int
 	{
 		return width;
 	}
 	
-	public inline function GetHeight():Int
+	public function GetHeight():Int
 	{
 		return height;
 	}

@@ -225,7 +225,7 @@ class GraphGridMap implements IGraphStructure
 	/*
 	 * Only in use temporarily as i need to split the public interface for nodes from the pathplanner specific needs.
 	 */
-	public function ResetForPathplanning():Void
+	/*public function ResetForPathplanning():Void
 	{
 		for (i in 0...width)
 		{
@@ -237,7 +237,7 @@ class GraphGridMap implements IGraphStructure
 				//map[i + j * width].heuristic = 0;
 			}
 		}
-	}
+	}*/
 	
 	public function GetWidth():Int
 	{

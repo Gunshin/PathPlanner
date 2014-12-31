@@ -52,19 +52,21 @@ class Main
 		//DebugLogger.GetInstance().SetLoggingFunction(Print);
 		#end
 		
-		var map = LoadMap("resources/DragonAgeMaps/brc100d.map");
-		var paths = LoadScenarios("resources/DragonAgeScenarios/brc100d.map.scen", map, "	");
+		var map = LoadMap("resources/DragonAgeMaps/arena2.map");
+		var paths = LoadScenarios("resources/DragonAgeScenarios/arena2.map.scen", map, "	");
 		
 		var pathfinder:IPathfinder = new AStar();
 		var jps:IPathfinder = new JPS(map);
 		
+		var path:Int = 0;
+		
 		//var paths = GeneratePaths(map, 50);
-		var timerJPS = new DebugRunningTimer();
+		/*var timerJPS = new DebugRunningTimer();
 		for (i in 0...10000)
 		{
 			trace("starting JPS: " + i);
 			timerJPS.Start();
-			GetPath(jps, paths[10], map);
+			GetPath(jps, paths[path], map);
 			timerJPS.Stop();
 		}
 		
@@ -74,25 +76,25 @@ class Main
 		{
 			trace("starting AStar: " + i);
 			timerAStar.Start();
-			GetPath(pathfinder, paths[10], map);
+			GetPath(pathfinder, paths[path], map);
 			timerAStar.Stop();
 		}
 		
-		trace("timerJPS took: " + (timerJPS.GetCurrentTotalTime() / 10000) + " timerAStar took: " + (timerAStar.GetCurrentTotalTime() / 10000));
-		
-		//ComparePath( GetPath(pathfinder, paths[10], map), GetPath(jps, paths[10], map) , 0.1);
+		trace("timerJPS took: " + (timerJPS.GetCurrentTotalTime() / 10000) + " timerAStar took: " + (timerAStar.GetCurrentTotalTime() / 10000));*/
+		//trace("looking through: " + " _ " + paths[path].start.GetX() + "," + paths[path].start.GetY() + " t: " + paths[path].start.GetTraversable() + " _ " + paths[path].end.GetX() + "," + paths[path].end.GetY() + " t: " + paths[path].end.GetTraversable());
+		//ComparePath( GetPath(pathfinder, paths[path], map), GetPath(jps, paths[path], map) , 0.1);
 		//ComparePath( GetPath(pathfinder, paths[400], map), GetPath(jps, paths[400], map) , 0.1);
 		//ComparePath( GetPath(pathfinder, paths[400], map), GetPath(jps, paths[400], map) , 0.1);
 		//ComparePath( GetPath(pathfinder, paths[400], map), GetPath(jps, paths[400], map) , 0.1);
 		//trace(DebugLogger.GetInstance().GetActionList().length);
 		
-		/*var i = 0;
+		var i = 0;
 		for (path in paths)
 		{
 			trace("looking through: " + i++ + " _ " + path.start.GetX() + "," + path.start.GetY() + " t: " + path.start.GetTraversable() + " _ " + path.end.GetX() + "," + path.end.GetY() + " t: " + path.end.GetTraversable());
 			ComparePath( GetPath(jps, path, map), GetPath(pathfinder, path, map) , 0.4);
 			//GetPath(jps, path, map); // currently using GetPath on just the A* algorithm to determine whether a scenario is viable
-		}*/
+		}
 	}
 	
 	public function PrintPath(pathStruct_:PathResult)
@@ -126,8 +128,6 @@ class Main
 			);
 		//} );
 		timer.Stop();
-		
-		map_.ResetForPathplanning();
 		
 		var pathplannerName = Type.getClassName(Type.getClass(pathfinder_));
 		DebugLogger.Assert(path == null, "The pathplanner: " + pathplannerName + " has produced a null path! action count: " + DebugLogger.GetInstance().GetActionList().length);
@@ -276,12 +276,14 @@ class Main
 				 * [8] optimal length
 				 */
 				var segments = fin.readLine().split(splitChar_);
-				segmentArray.push( {
-					start: map_.GetNodeByIndex(Std.parseInt(segments[4]), Std.parseInt(segments[5])),
-					end: map_.GetNodeByIndex(Std.parseInt(segments[6]), Std.parseInt(segments[7])),
-					optimalLength: Std.parseFloat(segments[8])
-				});
-				
+				if (segments.length == 9) // some scenario files seem to have empty lines
+				{
+					segmentArray.push( {
+						start: map_.GetNodeByIndex(Std.parseInt(segments[4]), Std.parseInt(segments[5])),
+						end: map_.GetNodeByIndex(Std.parseInt(segments[6]), Std.parseInt(segments[7])),
+						optimalLength: Std.parseFloat(segments[8])
+					});
+				}
 			}
 		}
 		catch( ex:haxe.io.Eof ) 
