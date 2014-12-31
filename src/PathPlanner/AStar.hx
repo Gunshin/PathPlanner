@@ -15,7 +15,7 @@ import cs.Lib;
  */
 class AStar implements IPathfinder 
 {
-	var improveTimer:DebugRunningTimer = new DebugRunningTimer();
+	//var improveTimer:DebugRunningTimer = new DebugRunningTimer();
 	
 	public function new()
 	{
@@ -27,7 +27,7 @@ class AStar implements IPathfinder
 	public function FindPath(param_:PathplannerParameter, heuristicFunction_: Node -> Node -> Float):Array<Node>
 	#end
 	{
-		improveTimer.Reset();
+		//improveTimer.Reset();
 		
 		#if action_output
 		DebugLogger.GetInstance().ResetActionList();
@@ -56,7 +56,7 @@ class AStar implements IPathfinder
 			
 			if (currentNode == param_.goalNode)
 			{
-				trace("improve A*: " + (improveTimer.GetCurrentTotalTime() * 1000000));
+				//trace("improve A*: " + (improveTimer.GetCurrentTotalTime() * 1000000));
 				
 				return PathUtility.ReconstructPath(param_.goalNode);
 			}
@@ -66,9 +66,9 @@ class AStar implements IPathfinder
 				{
 					if (neighbours[i] != null && neighbours[i].connectedNode.GetTraversable() == true) // if node is traversable, expand it
 					{
-						improveTimer.Start();
+						//improveTimer.Start();
 						Improve(currentNode, neighbours[i], param_.goalNode, open, closed, heuristicFunction_);
-						improveTimer.Stop();
+						//improveTimer.Stop();
 					}
 					
 				}

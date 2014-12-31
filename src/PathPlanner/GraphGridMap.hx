@@ -210,12 +210,12 @@ class GraphGridMap implements IGraphStructure
 		return neighbours;
 	}
 	
-	public inline function GetNodeByIndex(x_:Int, y_:Int):Node
+	public function GetNodeByIndex(x_:Int, y_:Int):Node
 	{
 		return x_ >= 0 && y_ >= 0 && x_ < width && y_ < height ? map[x_ + y_ * width] : null;
 	}
 	
-	public inline function GetIndexOfNode(node_:Node):IndexOfNode
+	public function GetIndexOfNode(node_:Node):IndexOfNode
 	{
 		var indexX:Int = cast(node_.GetX() / nodeWidth, Int);
 		var indexY:Int = cast(node_.GetY() / nodeHeight, Int);
@@ -231,30 +231,30 @@ class GraphGridMap implements IGraphStructure
 		{
 			for (j in 0...height)
 			{
-				map[i + j * width].SetParent(null);
-				map[i + j * width].searched = false;
-				map[i + j * width].SetPathCost(0);
-				map[i + j * width].heuristic = 0;
+				//map[i + j * width].SetParent(null);
+				//map[i + j * width].searched = false;
+				//map[i + j * width].SetPathCost(0);
+				//map[i + j * width].heuristic = 0;
 			}
 		}
 	}
 	
-	public inline function GetWidth():Int
+	public function GetWidth():Int
 	{
 		return width;
 	}
 	
-	public inline function GetHeight():Int
+	public function GetHeight():Int
 	{
 		return height;
 	}
 	
-	public inline function GetNodeWidth():Int
+	public function GetNodeWidth():Int
 	{
 		return nodeWidth;
 	}
 	
-	public inline function GetNodeHeight():Int
+	public function GetNodeHeight():Int
 	{
 		return nodeHeight;
 	}

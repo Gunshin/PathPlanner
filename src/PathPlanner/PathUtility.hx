@@ -8,7 +8,7 @@ import haxe.Int32;
 class PathUtility 
 {
 
-	static public function ReconstructPath(endNode_:Node):Array<Node>
+	static inline public function ReconstructPath(endNode_:Node):Array<Node>
 	{
 		
 		var path:Array<Node> = new Array<Node>();

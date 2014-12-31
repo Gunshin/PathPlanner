@@ -59,11 +59,31 @@ class Main
 		var jps:IPathfinder = new JPS(map);
 		
 		//var paths = GeneratePaths(map, 50);
+		var timerJPS = new DebugRunningTimer();
+		for (i in 0...10000)
+		{
+			trace("starting JPS: " + i);
+			timerJPS.Start();
+			GetPath(jps, paths[10], map);
+			timerJPS.Stop();
+		}
 		
-		ComparePath( GetPath(pathfinder, paths[400], map), GetPath(jps, paths[400], map) , 0.1);
-		ComparePath( GetPath(pathfinder, paths[400], map), GetPath(jps, paths[400], map) , 0.1);
-		ComparePath( GetPath(pathfinder, paths[400], map), GetPath(jps, paths[400], map) , 0.1);
-		ComparePath( GetPath(pathfinder, paths[400], map), GetPath(jps, paths[400], map) , 0.1);
+		
+		var timerAStar = new DebugRunningTimer();
+		for (i in 0...10000)
+		{
+			trace("starting AStar: " + i);
+			timerAStar.Start();
+			GetPath(pathfinder, paths[10], map);
+			timerAStar.Stop();
+		}
+		
+		trace("timerJPS took: " + (timerJPS.GetCurrentTotalTime() / 10000) + " timerAStar took: " + (timerAStar.GetCurrentTotalTime() / 10000));
+		
+		//ComparePath( GetPath(pathfinder, paths[10], map), GetPath(jps, paths[10], map) , 0.1);
+		//ComparePath( GetPath(pathfinder, paths[400], map), GetPath(jps, paths[400], map) , 0.1);
+		//ComparePath( GetPath(pathfinder, paths[400], map), GetPath(jps, paths[400], map) , 0.1);
+		//ComparePath( GetPath(pathfinder, paths[400], map), GetPath(jps, paths[400], map) , 0.1);
 		//trace(DebugLogger.GetInstance().GetActionList().length);
 		
 		/*var i = 0;
@@ -106,6 +126,9 @@ class Main
 			);
 		//} );
 		timer.Stop();
+		
+		map_.ResetForPathplanning();
+		
 		var pathplannerName = Type.getClassName(Type.getClass(pathfinder_));
 		DebugLogger.Assert(path == null, "The pathplanner: " + pathplannerName + " has produced a null path! action count: " + DebugLogger.GetInstance().GetActionList().length);
 		

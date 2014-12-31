@@ -1,23 +1,43 @@
 package pathPlanner;
+import pathPlanner.DebugLogger.Action;
 
 #if cs
 import cs.Lib;
 #end
 
 // secondary node incase SetParent or similar
-typedef Action = {actionType:Int, primaryNode:Node, secondaryNode:Node}
+class Action
+{
+	var actionType:Int;
+	var primaryNode:Node;
+	var secondaryNode:Node;
+	
+	public function new(actionType_:Int, primaryNode_:Node, secondaryNode_:Node)
+	{
+		actionType = actionType_;
+		primaryNode = primaryNode_;
+		secondaryNode = secondaryNode_;
+	}
+}
 
 /**
  * ...
  * @author ...
  */
-@:nativeGen
 class DebugLogger 
 {
 	@:protected
 	static var instance:DebugLogger;
 	
-	public var actionTypeMap:Map<String, Int> = [
+	public var actionTypes:Array<String> = [
+	"Expand",
+	"AddToOpen",
+	"AddToClose",
+	"SetParent"
+	];
+	
+	@:protected
+	var actionTypeMap:Map<String, Int> = [
 		"Expand" => 1,
 		"AddToOpen" => 2,
 		"AddToClosed" => 3,
@@ -25,7 +45,7 @@ class DebugLogger
 	];
 	
 	@:protected
-	private var actionList:Array<Action> = new Array<Action>();
+	var actionList:Array<Action> = new Array<Action>();
 	
 	#if cs
 	var loggingFunction:cs.system.Action_1<String>;
@@ -35,7 +55,6 @@ class DebugLogger
 	
 	function new()
 	{
-		
 	}
 	
 	public function GetActionList():Array<Action>
@@ -50,22 +69,27 @@ class DebugLogger
 	
 	public function Expand(node:Node)
 	{
-		actionList.push({actionType:1, primaryNode:node, secondaryNode:null});
+		actionList.push(new Action(1, node, null));
 	}
 	
 	public function AddToOpen(node:Node)
 	{
-		actionList.push({actionType:2, primaryNode:node, secondaryNode:null});
+		actionList.push(new Action(2, node, null));
 	}
 	
 	public function AddToClosed(node:Node)
 	{
-		actionList.push({actionType:3, primaryNode:node, secondaryNode:null});
+		actionList.push(new Action(3, node, null));
 	}
 	
 	public function SetParent(node:Node, parent:Node)
 	{
-		actionList.push({actionType:4, primaryNode:node, secondaryNode:parent});
+		actionList.push(new Action(4, node, parent));
+	}
+	
+	public function GetActionKeysValue(actionKey:String)
+	{
+		return actionTypeMap.get(actionKey);
 	}
 	
 	public function Print(message_:String)

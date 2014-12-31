@@ -18,7 +18,7 @@ extends HashableItem
 	//
 	
 	//TODO: fix this damn class
-	public var searched:Bool = false;
+	//public var searched:Bool = false;
 	
 	@:protected
 	var x:Float;

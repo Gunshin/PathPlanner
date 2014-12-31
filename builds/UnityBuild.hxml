@@ -1,7 +1,7 @@
 -cs bin/Unity
 -D net-ver=40
 -D no-compilation
--D debugging
+-D action_output
 -cp src
 -cp ds/src
 -lib polygonal-printf

@@ -31,11 +31,17 @@ class GraphGridMapMinimalist
 		
 		map = new Array<Int>();
 		
+		SetMap(traversableDefault_);
+	}
+	
+	public function SetMap(traversableDefault_:Bool)
+	{
+		var gridValue:Int32 = traversableDefault_ ? ~0 : 0;// all bits set as 1 as assumed traversable
 		for (j in 0...height)
 		{
 			for (i in 0...correctedWidth)
 			{
-				map[i + j * height] = traversableDefault_ ? ~0 : 0; // all bits set as 1 as assumed traversable
+				map[i + j * height] = gridValue;
 			}
 		}
 	}
@@ -151,6 +157,8 @@ class GraphGridMapMinimalist
 		map[Std.int(x_ / 32) + (y_ * height)] &= ~(1 << (32 - (x_ % 32)));
 		
 	}
+	
+	
 	
 	public inline function GetWidth():Int
 	{
