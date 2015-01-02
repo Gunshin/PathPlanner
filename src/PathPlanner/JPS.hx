@@ -19,6 +19,7 @@ class JPS implements IPathfinder
 	@:protected
 	var endNode:Node;
 	
+	@:protected
 	var searchedMap:GraphGridMapMinimalist;
 	
 	/*var verticalTimer:DebugRunningTimer = new DebugRunningTimer();
@@ -63,8 +64,9 @@ class JPS implements IPathfinder
 		}
 		
 		//map.ResetForPathplanning(); //TODO: correct Node implementation
+		trace("searchmap: " + searchedMap.GetWidth() + " _ " + searchedMap.GetHeight());
 		searchedMap.SetMap(false);
-		
+		trace("__ " + searchedMap.GetTraversable(0, 0));
 		#if debugging
 		//DebugLogger.Assert(startNode.GetParent() != null, "warning, map not correctly reset, start node has parent");
 		//DebugLogger.Assert(endNode.GetParent() != null, "warning, map not correctly reset, end node has parent");
@@ -120,6 +122,7 @@ class JPS implements IPathfinder
 			Improve(currentNode, open, heuristicFunction_);
 			//improveTimer.Stop();
 		}
+		
 		return null;// no path is found
 	}
 	
@@ -174,7 +177,7 @@ class JPS implements IPathfinder
 				var traverseCost = (i % 2) == 0 ? 1.4 : 1;
 				var index = map.GetIndexOfNode(neighbours[i]);
 				if (neighbours[i].GetTraversable() == true && 
-				(searchedMap.GetTraversable(index.x, index.y) == false || map.GetNodeByIndex(index.x, index.y).GetPathCost() > jumpPoint_.GetPathCost() + traverseCost))
+				(!searchedMap.GetTraversable(index.x, index.y) || map.GetNodeByIndex(index.x, index.y).GetPathCost() > jumpPoint_.GetPathCost() + traverseCost))
 				{
 					// map.GetRawNeighbours(jumpPoint_); returns an array of neighbours with every even index being a corner neighbour
 					neighbours[i].SetPathCost(jumpPoint_.GetPathCost() + traverseCost);
@@ -197,7 +200,6 @@ class JPS implements IPathfinder
 				}
 			}
 		}
-		
 	}
 	
 	function Jump(node_:Node, parentNode_:Node, length_:Int):Node

@@ -63,8 +63,8 @@ class PathUtility
 		#if cpp
 		var x:Int32 = number;
 		untyped __cpp__('unsigned long index');
-		untyped __cpp__('_BitScanForward(&index, x)'); // special microsoft compiler intrinsic
-		return untyped __cpp__('index');
+		untyped __cpp__('unsigned char zero = _BitScanForward(&index, x)'); // special microsoft compiler intrinsic
+		return untyped __cpp__('index > 32 || zero == 0 ? 32 : index'); // need the zero byte to know whether the mask (x) is 0 or not
 		#else
 		var x:Int32 = number;
 		if (x == 0)

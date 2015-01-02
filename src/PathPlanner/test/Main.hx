@@ -34,19 +34,32 @@ class Main
 	
 	public function new()
 	{
-		/*var num:haxe.Int32 = 61624;
+		/*var num:haxe.Int32 = 0;
 		var s = Timer.stamp();
 		var r = PathUtility.CTZ(num);
 		//trace(StringTools.hex(num));
 		trace((Timer.stamp() - s) * 1000000 + " _ " + r);
 		trace((num >> 2) & 1);*/
 		
-		/*var graph:GraphGridMapMinimalist = new GraphGridMapMinimalist(64, 64, false);
-		graph.SetTraversableTrue(32, 0);
-		trace(graph.GetTraversable(32, 0));
+		//var graph:GraphGridMapMinimalist = new GraphGridMapMinimalist(64, 64, false);
+		//graph.SetTraversableTrue(0, 0);
+		//graph.SetTraversableTrue(19, 0);
+		//trace(graph.GetTraversable(1, 0));
+		//trace(graph.GetTraversable(19, 0));
+		//trace(graph.CheckBitsLeft(60, 0));
 		
-		var rotated:GraphGridMapMinimalist = graph.RotateMap();
-		trace(rotated.GetTraversable(0, 32));*/
+		/*var rotated:GraphGridMapMinimalist = graph.RotateMap();
+		for (i in 0...rotated.GetWidth())
+		{
+			for (j in 0...rotated.GetHeight())
+			{
+				if(!rotated.GetTraversable(i, j))
+				trace(i + " _ " + j);
+			}
+		}*/
+		
+		//trace(rotated.GetTraversable(20, 54));
+		//trace(rotated.CheckBitsRight(0, 0));
 		
 		#if debugging
 		//DebugLogger.GetInstance().SetLoggingFunction(Print);
