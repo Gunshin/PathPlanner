@@ -124,17 +124,17 @@ class Main
 				return Math.sqrt(Math.pow(nodeOne.GetX() - nodeTwo.GetX(), 2) + Math.pow(nodeOne.GetY() - nodeTwo.GetY(), 2));
 			});
 		
-		var path:Int = 0;
+		var path:Int = 20;
 		
 		//var paths = GeneratePaths(map, 50);
-		/*var timerJPS = new DebugRunningTimer();
+		var timerJPS = new DebugRunningTimer();
 		for (i in 0...100000)
 		{
 			trace("starting JPS: " + i);
 			timerJPS.Start();
 			GetPath(jps, paths[path], map);
 			timerJPS.Stop();
-		}*/
+		}
 		
 		
 		/*var timerAStar = new DebugRunningTimer();
@@ -146,7 +146,7 @@ class Main
 			timerAStar.Stop();
 		}*/
 
-		//trace("timerJPS took: " + (timerJPS.GetCurrentTotalTime() / 100000)/* + " timerAStar took: " + (timerAStar.GetCurrentTotalTime() / 1000)*/);
+		trace("timerJPS took: " + (timerJPS.GetCurrentTotalTime() / 100000)/* + " timerAStar took: " + (timerAStar.GetCurrentTotalTime() / 1000)*/);
 		//trace("looking through: " + " _ " + paths[path].start.GetX() + "," + paths[path].start.GetY() + " t: " + paths[path].start.GetTraversable() + " _ " + paths[path].end.GetX() + "," + paths[path].end.GetY() + " t: " + paths[path].end.GetTraversable());
 		//ComparePath( GetPath(pathfinder, paths[path], map), GetPath(jps, paths[path], map) , 0.1);
 		//ComparePath( GetPath(pathfinder, paths[400], map), GetPath(jps, paths[400], map) , 0.1);
@@ -154,14 +154,14 @@ class Main
 		//ComparePath( GetPath(pathfinder, paths[400], map), GetPath(jps, paths[400], map) , 0.1);
 		//trace(DebugLogger.GetInstance().GetActionList().length);
 		
-		var i = 0;
+		/*var i = 0;
 		for (path in paths)
 		{
 			trace("looking through: " + i++ + " _ " + path.start.GetPosition().GetX() + "," + path.start.GetPosition().GetY() + " t: " +
 			path.start.GetTraversable() + " _ " + path.end.GetPosition().GetX() + "," + path.end.GetPosition().GetY() + " t: " + path.end.GetTraversable());
 			ComparePath( GetPath(jps, path, map), GetPath(pathfinder, path, map) , 0.4);
 			//GetPath(jps, path, map); // currently using GetPath on just the A* algorithm to determine whether a scenario is viable
-		}
+		}*/
 	}
 	
 	/*public function PrintPath(pathStruct_:PathResult)

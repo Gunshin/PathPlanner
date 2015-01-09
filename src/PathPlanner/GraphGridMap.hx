@@ -37,7 +37,7 @@ class GraphGridMap implements IGraphStructure
 	var height:Int = 0;
 	
 	@:protected
-	var map:Vector<Node>;
+	var map:Array<Node>;
 	
 	@:protected
 	var neighbourHashTable:HashTable <Node, Array<DistanceNode>> ;
@@ -49,8 +49,7 @@ class GraphGridMap implements IGraphStructure
 		
 		neighbourHashTable = new HashTable < Node, Array<DistanceNode> > (4, 32);
 		
-		map = new Vector<Node>(width * height);
-		//map = new Array<Node>();
+		map = new Array<Node>();
 		for (i in 0...width)
 		{
 			for (j in 0...height)

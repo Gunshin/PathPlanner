@@ -6,7 +6,9 @@ need to improve heuristic based on direction we are expanding so that nodes expa
 GraphGridMapMinimalist:
 decide on full implementation. currently does not inherit from IGraphStructure
 
-SORT OUT GRAPH GRID MAP VECTOR OR ARRAY IMPLEMENTATION
+original running time release:
+	3.681081611e-005
+
 
 open list:
 	minimalist_node
