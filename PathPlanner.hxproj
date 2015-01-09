@@ -24,7 +24,7 @@
     <option noInlineOnDebug="False" />
     <option mainClass="pathPlanner.test.Main" />
     <option enabledebug="False" />
-    <option additional="-lib polygonal-ds&#xA;-D action_output&#xA;" />
+    <option additional="-lib polygonal-ds&#xA;-D action_output&#xA;-D debugging" />
   </build>
   <!-- haxelib libraries -->
   <haxelib>

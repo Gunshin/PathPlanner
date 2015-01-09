@@ -1,4 +1,5 @@
 package pathPlanner;
+import haxe.ds.Vector;
 import haxe.Int32;
 
 /**
@@ -18,7 +19,7 @@ class GraphGridMapMinimalist
 	var correctedWidth:Int = 0;
 	
 	@:protected
-	var map:Array<Int32>;
+	var map:Vector<Int32>;
 
 	public function new(width_:Int, height_:Int, traversableDefault_:Bool) 
 	{
@@ -28,7 +29,7 @@ class GraphGridMapMinimalist
 		// width may be of non 32 multiplier size
 		correctedWidth = Math.ceil(width / 32);
 		
-		map = new Array<Int>();
+		map = new Vector<Int>(correctedWidth * height);
 		
 		SetMap(traversableDefault_);
 	}
@@ -36,7 +37,6 @@ class GraphGridMapMinimalist
 	public function SetMap(traversableDefault_:Bool)
 	{
 		var gridValue:Int32 = traversableDefault_ ? 0 : ~0;// all bits set as 0 are assumed traversable
-		trace("setmap: " + traversableDefault_ + " _ " + gridValue);
 		for (j in 0...(correctedWidth * height))
 		{
 			map[j] = gridValue;
@@ -192,7 +192,7 @@ class GraphGridMapMinimalist
 	{
 		
 		#if debugging
-		DebugLogger.Assert(x_ < 0 || x_ >= width || y_ < 0 || y_ >= height, "operation out of bounds: x: " + x_ + " y: " + y_ + " mapWidth: " + width + " mapHeight: " + height);
+		DebugLogger.Assert(!(x_ < 0 || x_ >= width || y_ < 0 || y_ >= height), "operation out of bounds: x: " + x_ + " y: " + y_ + " mapWidth: " + width + " mapHeight: " + height);
 		#end
 		
 		return ((map[Std.int(x_ / 32) + (y_ * correctedWidth)] >> 31 - x_ % 32) & 1) == 0;
@@ -205,7 +205,7 @@ class GraphGridMapMinimalist
 	{
 		
 		#if debugging
-		DebugLogger.Assert(x_ < 0 || x_ >= width || y_ < 0 || y_ >= height, "operation out of bounds: x: " + x_ + " y: " + y_ + " mapWidth: " + width + " mapHeight: " + height);
+		DebugLogger.Assert(!(x_ < 0 || x_ >= width || y_ < 0 || y_ >= height), "operation out of bounds: x: " + x_ + " y: " + y_ + " mapWidth: " + width + " mapHeight: " + height);
 		#end
 		map[Std.int(x_ / 32) + (y_ * correctedWidth)] &= ~(1 << (31 - (x_ % 32)));
 	}
@@ -217,7 +217,7 @@ class GraphGridMapMinimalist
 	{
 		
 		#if debugging
-		DebugLogger.Assert(x_ < 0 || x_ >= width || y_ < 0 || y_ >= height, "operation out of bounds: x: " + x_ + " y: " + y_ + " mapWidth: " + width + " mapHeight: " + height);
+		DebugLogger.Assert(!(x_ < 0 || x_ >= width || y_ < 0 || y_ >= height), "operation out of bounds: x: " + x_ + " y: " + y_ + " mapWidth: " + width + " mapHeight: " + height);
 		#end
 		
 		map[Std.int(x_ / 32) + (y_ * correctedWidth)] |= 1 << (31 - (x_ % 32));

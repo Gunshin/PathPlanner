@@ -3,16 +3,18 @@ package pathPlanner;
 package pathPlanner;
 
 import de.polygonal.ds.PriorityQueue;
+import pathPlanner.JPSPlus.Position;
 
 #if cs
 import cs.Lib;
 #end
 
-typedef JumpResult = { found:Bool, jumpPoint:Node }
-
 /**
  * ...
  * @author Michael Stephens
+ * 
+ * For now we will be simplifying the types to allow for simplicity, but further on i may turn towards vectors and remove these classes
+ * 
  */
 class JPSPlus implements IPathfinder 
 {
@@ -25,20 +27,37 @@ class JPSPlus implements IPathfinder
 	var searchedMap:GraphGridMapMinimalist;
 	
 	@:protected
+	var parentGrid:Array<Position> = new Array<Position>();
+	
+	@:protected
 	var endNode:Node;
+	
+	#if cs
+	cs.system.Func_3<Position,Position,Float>;
+	#else
+	Position -> Position -> Float;
+	#end
 		
-	public function new(map_:GraphGridMapMinimalist)
+	public function new(map_:GraphGridMapMinimalist, heuristicFunction_:
+		#if cs
+		cs.system.Func_3<Position,Position,Float>
+		#else
+		Position -> Position -> Float
+		#end
+		)
 	{
 		map = map_;
-		mapRotated = map.RotateMap();
+		
+		heuristicFunction = heuristicFunction_;
 	}
 	
 	#if cs
-	public function FindPath(param_:PathplannerParameter, heuristicFunction_:cs.system.Func_3<Node,Node,Float>):Array<Node>
+	public function FindPath(param_:PathplannerParameter, heuristicFunction_:cs.system.Func_3<Position,Position,Float>):Array<Node>
 	#else
-	public function FindPath(param_:PathplannerParameter, heuristicFunction_: Node -> Node -> Float):Array<Node>
+	public function FindPath(param_:PathplannerParameter, heuristicFunction_: Position -> Position -> Float):Array<Node>
 	#end
 	{
+		
 		/*verticalTimer.Reset();
 		horizontalTimer.Reset();
 		diagonalTimer.Reset();
@@ -49,10 +68,12 @@ class JPSPlus implements IPathfinder
 		
 		//findTimer.Start();
 		
-		var startNode:Node;
+		// generate a fresh rotated map as there may have been changes to the original map not reflected into the rotated
+		// i should probably just merge the two and take the slight performance hit when updating the graph
+		mapRotated = map.RotateMap();
+		parentGrid = new Array<Position>();
 		
-		startNode = param_.startNode != null ? param_.startNode : map.GetNodeByIndex(param_.startX, param_.startY);
-		endNode = param_.goalNode != null ? param_.goalNode : map.GetNodeByIndex(param_.goalX, param_.goalY);
+		var startCoord:Position = new Position(param_.startX, param_.startY);
 		
 		if (endNode == null || startNode == null)
 		{
@@ -70,13 +91,10 @@ class JPSPlus implements IPathfinder
 		#if action_output
 		DebugLogger.GetInstance().ResetActionList();
 		#end
+				
+		searchedMap.SetTraversableTrue(startCoord.x, startCoord.y); // if we dont do this, the algorithm attempts to search the start node again which results in a cyclic reference
 		
-		startNode.SetParent(null);
-		var index = map.GetIndexOfNode(startNode);
-		
-		searchedMap.SetTraversableTrue(index.x, index.y); // if we dont do this, the algorithm attempts to search the start node again which results in a cyclic reference
-		
-		var open:PriorityQueue<Node> = new PriorityQueue<Node>(true, 128);
+		var open:PriorityQueue<Position> = new PriorityQueue<Position>(true, 128);
 		
 		// the start node is being treat as a jump point, so that its neighbours are added to the list
 		ExpandJumpPoint(startNode, open, heuristicFunction_);
@@ -123,9 +141,9 @@ class JPSPlus implements IPathfinder
 	
 	// Procedure Improve as listed on page 70 of Heuristic Search: Theory and Applications by Stefan Edelkamp and Stefan Schrodl
 	#if cs
-	function Improve(currentNode_:Node, open_:PriorityQueue<Node>, heuristicFunction_:cs.system.Func_3<Node,Node,Float>):Void
+	function Improve(currentNode_:Node, open_:PriorityQueue<Node>, heuristicFunction_:cs.system.Func_3<Position,Position,Float>):Void
 	#else
-	function Improve(currentNode_:Node, open_:PriorityQueue<Node>, heuristicFunction_: Node -> Node -> Float):Void
+	function Improve(currentNode_:Node, open_:PriorityQueue<Node>, heuristicFunction_: Position -> Position -> Float):Void
 	#end
 	{
 		
@@ -159,9 +177,9 @@ class JPSPlus implements IPathfinder
 	
 	// we expand the jump point by adding all of its neighbours to the open list.
 	#if cs
-	function ExpandJumpPoint(jumpPoint_:Node, open_:PriorityQueue<Node>, heuristicFunction_:cs.system.Func_3<Node,Node,Float>):Void
+	function ExpandJumpPoint(jumpPoint_:Position, open_:PriorityQueue<Position>, heuristicFunction_:cs.system.Func_3<Position,Position,Float>):Void
 	#else
-	function ExpandJumpPoint(jumpPoint_:Node, open_:PriorityQueue<Node>, heuristicFunction_: Node -> Node -> Float):Void
+	function ExpandJumpPoint(jumpPoint_:Position, open_:PriorityQueue<Position>, heuristicFunction_: Position -> Position -> Float):Void
 	#end
 	{
 		var neighbours:Array<Node> = map.GetRawNeighbours(jumpPoint_);

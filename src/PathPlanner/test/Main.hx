@@ -1,5 +1,6 @@
 package pathPlanner.test;
 
+import haxe.ds.Vector;
 import haxe.io.Eof;
 import haxe.io.Path;
 import haxe.Timer;
@@ -15,6 +16,7 @@ import sys.io.FileOutput;
 
 import pathPlanner.GraphGridMap;
 
+typedef Tester = {x:Int, y:Int, flag:Bool}
 typedef Path = { start:Node, end:Node, optimalLength:Float }
 typedef PathResult = { pathplanner:IPathfinder, pathLength: Float, timeTaken: Float, actionCount: Int, path: Array<Node> }
 
@@ -34,6 +36,51 @@ class Main
 	
 	public function new()
 	{
+		
+		/*var size:Int = 1000000;
+		
+		{
+			var vector:Vector<Tester> = new Vector<Tester>(size);
+			Timer.measure(function()
+			{
+				for (i in 0...size)
+				{
+					vector[i] = {x:0, y:0, flag:false};
+					vector[i].x+=1;
+				}
+			});
+			
+			Timer.measure(function()
+			{
+				for (i in 0...size)
+				{
+					vector[i].x+=1;
+				}
+			});
+		}
+		
+		{
+			var array:Array<Tester> = new Array<Tester>();
+			Timer.measure(function()
+			{
+				for (i in 0...size)
+				{
+					array[i] = {x:0, y:0, flag:false};
+					array[i].x+=1;
+				}
+			});
+			
+			Timer.measure(function()
+			{
+				for (i in 0...size)
+				{
+					array[i].x+=1;
+				}
+			});
+		}*/
+		
+		
+		
 		/*var num:haxe.Int32 = 0;
 		var s = Timer.stamp();
 		var r = PathUtility.CTZ(num);
@@ -68,32 +115,38 @@ class Main
 		var map = LoadMap("resources/DragonAgeMaps/arena2.map");
 		var paths = LoadScenarios("resources/DragonAgeScenarios/arena2.map.scen", map, "	");
 		
-		var pathfinder:IPathfinder = new AStar();
-		var jps:IPathfinder = new JPS(map);
+		var pathfinder:IPathfinder = new AStar(function(nodeOne, nodeTwo)
+			{
+				return Math.sqrt(Math.pow(nodeOne.GetX() - nodeTwo.GetX(), 2) + Math.pow(nodeOne.GetY() - nodeTwo.GetY(), 2));
+			});
+		var jps:IPathfinder = new JPS(map, function(nodeOne, nodeTwo)
+			{
+				return Math.sqrt(Math.pow(nodeOne.GetX() - nodeTwo.GetX(), 2) + Math.pow(nodeOne.GetY() - nodeTwo.GetY(), 2));
+			});
 		
 		var path:Int = 0;
 		
 		//var paths = GeneratePaths(map, 50);
 		/*var timerJPS = new DebugRunningTimer();
-		for (i in 0...10000)
+		for (i in 0...100000)
 		{
 			trace("starting JPS: " + i);
 			timerJPS.Start();
 			GetPath(jps, paths[path], map);
 			timerJPS.Stop();
-		}
+		}*/
 		
 		
-		var timerAStar = new DebugRunningTimer();
-		for (i in 0...10000)
+		/*var timerAStar = new DebugRunningTimer();
+		for (i in 0...1000)
 		{
 			trace("starting AStar: " + i);
 			timerAStar.Start();
 			GetPath(pathfinder, paths[path], map);
 			timerAStar.Stop();
-		}
-		
-		trace("timerJPS took: " + (timerJPS.GetCurrentTotalTime() / 10000) + " timerAStar took: " + (timerAStar.GetCurrentTotalTime() / 10000));*/
+		}*/
+
+		//trace("timerJPS took: " + (timerJPS.GetCurrentTotalTime() / 100000)/* + " timerAStar took: " + (timerAStar.GetCurrentTotalTime() / 1000)*/);
 		//trace("looking through: " + " _ " + paths[path].start.GetX() + "," + paths[path].start.GetY() + " t: " + paths[path].start.GetTraversable() + " _ " + paths[path].end.GetX() + "," + paths[path].end.GetY() + " t: " + paths[path].end.GetTraversable());
 		//ComparePath( GetPath(pathfinder, paths[path], map), GetPath(jps, paths[path], map) , 0.1);
 		//ComparePath( GetPath(pathfinder, paths[400], map), GetPath(jps, paths[400], map) , 0.1);
@@ -104,13 +157,14 @@ class Main
 		var i = 0;
 		for (path in paths)
 		{
-			trace("looking through: " + i++ + " _ " + path.start.GetX() + "," + path.start.GetY() + " t: " + path.start.GetTraversable() + " _ " + path.end.GetX() + "," + path.end.GetY() + " t: " + path.end.GetTraversable());
+			trace("looking through: " + i++ + " _ " + path.start.GetPosition().GetX() + "," + path.start.GetPosition().GetY() + " t: " +
+			path.start.GetTraversable() + " _ " + path.end.GetPosition().GetX() + "," + path.end.GetPosition().GetY() + " t: " + path.end.GetTraversable());
 			ComparePath( GetPath(jps, path, map), GetPath(pathfinder, path, map) , 0.4);
 			//GetPath(jps, path, map); // currently using GetPath on just the A* algorithm to determine whether a scenario is viable
 		}
 	}
 	
-	public function PrintPath(pathStruct_:PathResult)
+	/*public function PrintPath(pathStruct_:PathResult)
 	{
 		var path:Array<Node> = pathStruct_.path;
 		trace("path length: " + path.length);
@@ -120,7 +174,7 @@ class Main
 		}
 		
 		trace("path length of: " + pathStruct_.pathLength);
-	}
+	}*/
 	
 	public function GetPath(pathfinder_:IPathfinder, path_:Path, map_:GraphGridMap):PathResult
 	{
@@ -133,26 +187,22 @@ class Main
 		
 		//Timer.measure(function()
 		//{
-			path = pathfinder_.FindPath(pathParam, 
-			function(nodeOne, nodeTwo)
-			{
-				return Math.sqrt(Math.pow(nodeOne.GetX() - nodeTwo.GetX(), 2) + Math.pow(nodeOne.GetY() - nodeTwo.GetY(), 2));
-			}
-			);
+			path = pathfinder_.FindPath(pathParam);
 		//} );
 		timer.Stop();
 		
 		var pathplannerName = Type.getClassName(Type.getClass(pathfinder_));
-		DebugLogger.Assert(path == null, "The pathplanner: " + pathplannerName + " has produced a null path! action count: " + DebugLogger.GetInstance().GetActionList().length);
+		var actionOutput = pathfinder_.GetActionOutput();
+		DebugLogger.Assert(path != null, "The pathplanner: " + pathplannerName + " has produced a null path! action count: " + actionOutput.GetActionList().length);
 		
 		var pathLength:Float = 0;
 		for (node in path)
 		{
 			if(node.GetParent() != null)
-			pathLength += Math.sqrt(Math.pow(node.GetX() - node.GetParent().GetX(), 2) + Math.pow(node.GetY() - node.GetParent().GetY(), 2));
+			pathLength += Math.sqrt(Math.pow(node.GetPosition().GetX() - node.GetParent().GetPosition().GetX(), 2) + Math.pow(node.GetPosition().GetY() - node.GetParent().GetPosition().GetY(), 2));
 		}
 		
-		return {pathplanner:pathfinder_, path: path, timeTaken: (timer.GetCurrentTotalTime() * 1000000), actionCount: DebugLogger.GetInstance().GetActionList().length, pathLength: pathLength };
+		return {pathplanner:pathfinder_, path: path, timeTaken: (timer.GetCurrentTotalTime() * 1000000), actionCount: actionOutput.GetActionList().length, pathLength: pathLength };
 	}
 	
 	public function ComparePath(pathOne_:PathResult, pathTwo_:PathResult, deviance_:Float)
@@ -163,7 +213,7 @@ class Main
 		
 		// percentage difference between the paths taking path one as the default
 		var percent:Float = pathOne_.pathLength / pathTwo_.pathLength;
-		DebugLogger.Assert((percent - 1) < -deviance_ || (percent - 1) > deviance_, "Deviance of " + pathplannerTwoName + " is too large: " + (percent - 1) + " against: +/-" + deviance_);
+		DebugLogger.Assert(!((percent - 1) < -deviance_ || (percent - 1) > deviance_), "Deviance of " + pathplannerTwoName + " is too large: " + (percent - 1) + " against: +/-" + deviance_);
 		
 		trace("pathone: " + pathplannerOneName + " ________________________ ");
 		trace("pathLength:" + pathOne_.pathLength);
@@ -176,9 +226,7 @@ class Main
 		trace("timeTaken: " + pathTwo_.timeTaken);
 		trace("actionCount: " + pathTwo_.actionCount);
 		trace("node length: " + pathTwo_.path.length);
-		
-		//DebugLogger.Assert(pathOne_.timeTaken > pathTwo_.timeTaken, "found");
-		
+			
 	}
 	
 	public function LoadMap(filePath_:String):GraphGridMap
@@ -192,7 +240,7 @@ class Main
 			var width:Int = Std.parseInt(fin.readLine().split(" ")[1]);
 			fin.readLine(); //not sure what the 4th line is for in the map files
 			
-			map = new GraphGridMap(width, height, 1, 1);
+			map = new GraphGridMap(width, height);
 
 			for(y in 0...height)
 			{

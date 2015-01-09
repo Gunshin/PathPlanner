@@ -4,7 +4,7 @@ package pathPlanner;
  * ...
  * @author Michael Stephens
  */
-interface IGraphStructure 
+interface IGraphStructure
 {
 	public function GetNeighbours(node_:Node):Array<DistanceNode>;
 	

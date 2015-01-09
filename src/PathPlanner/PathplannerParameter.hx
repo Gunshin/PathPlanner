@@ -2,7 +2,7 @@ package pathPlanner;
 
 /**
  * ...
- * @author ...
+ * @author Michael Stephens
  * 
  * This class is 'needed' because not all pathplanners rely on the same data structures. Some such as JPS
  * can take either integer indexs or nodes to determine a path from one place to another, but the more 
@@ -10,7 +10,7 @@ package pathPlanner;
  * GraphStructureIndirect or similar
  * 
  */
-class PathplannerParameter 
+class PathplannerParameter
 {
 
 	public var startX:Int = 0;

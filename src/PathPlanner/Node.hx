@@ -21,9 +21,7 @@ extends HashableItem
 	//public var searched:Bool = false;
 	
 	@:protected
-	var x:Float;
-	@:protected
-	var y:Float;
+	var positionOfNode:Position;
 	
 	@:protected
 	var neighboursStructure:IGraphStructure;
@@ -39,13 +37,12 @@ extends HashableItem
 	@:protected
 	var parent:Node = null;
 		
-	public function new(x_:Float, y_:Float, traversable_:Bool, neighboursStructure_:IGraphStructure) 
+	public function new(positionOfNode_:Position, traversable_:Bool, neighboursStructure_:IGraphStructure) 
 	{
 		// initialise HashableItem so that a unique key is generated for this node
 		super();
 		
-		x = x_;
-		y = y_;
+		positionOfNode = positionOfNode_;
 		
 		traversable = traversable_;
 		
@@ -68,14 +65,9 @@ extends HashableItem
 		return neighboursStructure.RemoveNeighbour(this, neighbour_);
 	}
 	
-	public function GetX():Float
+	public function GetPosition():Position
 	{
-		return x;
-	}
-	
-	public function GetY():Float
-	{
-		return y;
+		return positionOfNode;
 	}
 	
 	public function GetTraversable():Bool

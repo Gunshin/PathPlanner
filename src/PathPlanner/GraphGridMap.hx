@@ -1,6 +1,7 @@
 package pathPlanner;
 
 import de.polygonal.ds.HashTable;
+import haxe.ds.Vector;
 
 /**
  * ...
@@ -16,18 +17,15 @@ import de.polygonal.ds.HashTable;
  * Additional neighbours are added to nodes through a hashmap, with each node being a key.
  */
 
-@:nativeGen
 class IndexOfNode
 {
 	public var contained:Bool;
-	public var x:Int;
-	public var y:Int;
+	public var position:Position;
 	
-	public function new(contained_:Bool, x_:Int, y_:Int)
+	public function new(contained_:Bool, position_:Position)
 	{
 		contained = contained_;
-		x = x_;
-		y = y_;
+		position = position_;
 	}
 }
  
@@ -37,33 +35,27 @@ class GraphGridMap implements IGraphStructure
 	var width:Int = 0;
 	@:protected
 	var height:Int = 0;
-	@:protected
-	var nodeWidth:Int = 0;
-	@:protected
-	var nodeHeight:Int = 0;
 	
 	@:protected
-	var map:Array<Node>;
+	var map:Vector<Node>;
 	
 	@:protected
-	var neighbourHashTable:HashTable < Node, Array<DistanceNode> > ;
+	var neighbourHashTable:HashTable <Node, Array<DistanceNode>> ;
 	
-	public function new(width_:Int, height_:Int, nodeWidth_:Int, nodeHeight_:Int) 
+	public function new(width_:Int, height_:Int) 
 	{
 		width = width_;
 		height = height_;
-		nodeWidth = nodeWidth_;
-		nodeHeight = nodeHeight_;
 		
 		neighbourHashTable = new HashTable < Node, Array<DistanceNode> > (4, 32);
 		
-		map = new Array<Node>();
-		
+		map = new Vector<Node>(width * height);
+		//map = new Array<Node>();
 		for (i in 0...width)
 		{
 			for (j in 0...height)
 			{
-				map[i + j * width] = new Node(i * nodeWidth, j * nodeWidth, true, this);
+				map[i + j * width] = new Node(new Position(i, j), true, this);
 			}
 		}
 	}
@@ -124,15 +116,8 @@ class GraphGridMap implements IGraphStructure
 	 */
 	public function GetDirectNeighbours(node_:Node):Array<DistanceNode>
 	{
-		var nodeIndex = GetIndexOfNode(node_);
-		// make sure that node is a part of the map
-		if (!nodeIndex.contained)
-		{
-			return null;
-		}
-		
-		var x:Int = nodeIndex.x;
-		var y:Int = nodeIndex.y;
+		var x:Int = node_.GetPosition().GetX();
+		var y:Int = node_.GetPosition().GetY();
 		
 		var neighbours:Array<DistanceNode> = new Array<DistanceNode>();
 		
@@ -184,15 +169,8 @@ class GraphGridMap implements IGraphStructure
 	
 	public function GetRawNeighbours(node_:Node):Array<Node>
 	{
-		var nodeIndex = GetIndexOfNode(node_);
-		// make sure that node is a part of the map
-		if (!nodeIndex.contained)
-		{
-			return null;
-		}
-		
-		var x:Int = nodeIndex.x;
-		var y:Int = nodeIndex.y;
+		var x:Int = node_.GetPosition().GetX();
+		var y:Int = node_.GetPosition().GetY();
 		
 		var neighbours:Array<Node> = new Array<Node>();
 		
@@ -213,13 +191,6 @@ class GraphGridMap implements IGraphStructure
 	public function GetNodeByIndex(x_:Int, y_:Int):Node
 	{
 		return x_ >= 0 && y_ >= 0 && x_ < width && y_ < height ? map[x_ + y_ * width] : null;
-	}
-	
-	public function GetIndexOfNode(node_:Node):IndexOfNode
-	{
-		var indexX:Int = cast(node_.GetX() / nodeWidth, Int);
-		var indexY:Int = cast(node_.GetY() / nodeHeight, Int);
-		return new IndexOfNode(map[indexX + indexY * width] == node_, indexX, indexY);
 	}
 	
 	/*
@@ -247,16 +218,6 @@ class GraphGridMap implements IGraphStructure
 	public function GetHeight():Int
 	{
 		return height;
-	}
-	
-	public function GetNodeWidth():Int
-	{
-		return nodeWidth;
-	}
-	
-	public function GetNodeHeight():Int
-	{
-		return nodeHeight;
 	}
 	
 }

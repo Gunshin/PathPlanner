@@ -16,21 +16,35 @@ import cs.Lib;
 class AStar implements IPathfinder 
 {
 	//var improveTimer:DebugRunningTimer = new DebugRunningTimer();
+	@:protected
+	var heuristicFunction:
+	#if cs
+	cs.system.Func_3<Position,Position,Float>;
+	#else
+	Position -> Position -> Float;
+	#end
 	
-	public function new()
+	#if action_output
+	var actionOutput:ActionOutput;
+	#end
+	
+	public function new(heuristicFunction_:
+		#if cs
+		cs.system.Func_3<Position,Position,Float>
+		#else
+		Position -> Position -> Float
+		#end
+		)
 	{
+		heuristicFunction = heuristicFunction_;
 	}
 	
-	#if cs
-	public function FindPath(param_:PathplannerParameter, heuristicFunction_:cs.system.Func_3<Node,Node,Float>):Array<Node>
-	#else
-	public function FindPath(param_:PathplannerParameter, heuristicFunction_: Node -> Node -> Float):Array<Node>
-	#end
+	public function FindPath(param_:PathplannerParameter):Array<Node>
 	{
 		//improveTimer.Reset();
 		
 		#if action_output
-		DebugLogger.GetInstance().ResetActionList();
+		actionOutput = new ActionOutput();
 		#end
 		
 		param_.startNode.SetParent(null);
@@ -40,7 +54,7 @@ class AStar implements IPathfinder
 		
 		open.enqueue(param_.startNode);
 		#if action_output
-		DebugLogger.GetInstance().AddToOpen(param_.startNode);
+		actionOutput.AddToOpen(param_.startNode);
 		#end
 		
 		while (!open.isEmpty())
@@ -49,7 +63,7 @@ class AStar implements IPathfinder
 			var currentNode:Node = open.dequeue();
 			closed.enqueue(currentNode);
 			#if action_output
-			DebugLogger.GetInstance().AddToClosed(currentNode);
+			actionOutput.AddToClosed(currentNode);
 			#end
 			
 			var neighbours:Array<DistanceNode>;
@@ -67,7 +81,7 @@ class AStar implements IPathfinder
 					if (neighbours[i] != null && neighbours[i].connectedNode.GetTraversable() == true) // if node is traversable, expand it
 					{
 						//improveTimer.Start();
-						Improve(currentNode, neighbours[i], param_.goalNode, open, closed, heuristicFunction_);
+						Improve(currentNode, neighbours[i], param_.goalNode, open, closed);
 						//improveTimer.Stop();
 					}
 					
@@ -80,14 +94,16 @@ class AStar implements IPathfinder
 	}
 	
 	// Procedure Improve as listed on page 70 of Heuristic Search: Theory and Applications by Stefan Edelkamp and Stefan Schrodl
-	#if cs
-	function Improve(currentNode_:Node, successorNode_:DistanceNode, endNode_:Node, open_:PriorityQueue<Node>, closed_:PriorityQueue<Node>, heuristicFunction_:cs.system.Func_3<Node,Node,Float>):Void
-	#else
-	function Improve(currentNode_:Node, successorNode_:DistanceNode, endNode_:Node, open_:PriorityQueue<Node>, closed_:PriorityQueue<Node>, heuristicFunction_: Node -> Node -> Float):Void
-	#end
+	function Improve(
+	currentNode_:Node,
+	successorNode_:DistanceNode,
+	endNode_:Node,
+	open_:PriorityQueue<Node>,
+	closed_:PriorityQueue<Node>
+	):Void
 	{
 		#if action_output
-		DebugLogger.GetInstance().Expand(successorNode_.connectedNode);
+		actionOutput.Expand(successorNode_.connectedNode);
 		#end
 		if (open_.contains(successorNode_.connectedNode))
 		{
@@ -95,13 +111,14 @@ class AStar implements IPathfinder
 			{
 				successorNode_.connectedNode.SetParent(currentNode_);
 				#if action_output
-				DebugLogger.GetInstance().SetParent(successorNode_.connectedNode, currentNode_);
+				actionOutput.SetParent(successorNode_.connectedNode, currentNode_);
 				#end
+				
 				successorNode_.connectedNode.SetPathCost(currentNode_.GetPathCost() + successorNode_.distanceBetween);
 				#if cs
-				successorNode_.connectedNode.heuristic = heuristicFunction_.Invoke(successorNode_.connectedNode, endNode_);
+				successorNode_.connectedNode.heuristic = heuristicFunction.Invoke(successorNode_.connectedNode.GetPosition(), endNode_.GetPosition());
 				#else
-				successorNode_.connectedNode.heuristic = heuristicFunction_(successorNode_.connectedNode, endNode_); // the heuristic should not change, but under the assumption
+				successorNode_.connectedNode.heuristic = heuristicFunction(successorNode_.connectedNode.GetPosition(), endNode_.GetPosition()); // the heuristic should not change, but under the assumption
 				#end
 				// that a function may change it, we will forced it to update everytime.
 				
@@ -116,13 +133,14 @@ class AStar implements IPathfinder
 			{
 				successorNode_.connectedNode.SetParent(currentNode_);
 				#if action_output
-				DebugLogger.GetInstance().SetParent(successorNode_.connectedNode, currentNode_);
+				actionOutput.SetParent(successorNode_.connectedNode, currentNode_);
 				#end
+				
 				successorNode_.connectedNode.SetPathCost(currentNode_.GetPathCost() + successorNode_.distanceBetween);
 				#if cs
-				successorNode_.connectedNode.heuristic = heuristicFunction_.Invoke(successorNode_.connectedNode, endNode_);
+				successorNode_.connectedNode.heuristic = heuristicFunction.Invoke(successorNode_.connectedNode.GetPosition(), endNode_.GetPosition());
 				#else
-				successorNode_.connectedNode.heuristic = heuristicFunction_(successorNode_.connectedNode, endNode_); // the heuristic should not change, but under the assumption
+				successorNode_.connectedNode.heuristic = heuristicFunction(successorNode_.connectedNode.GetPosition(), endNode_.GetPosition()); // the heuristic should not change, but under the assumption
 				#end
 				// that a function may change it, we will forced it to update everytime.
 				
@@ -130,7 +148,7 @@ class AStar implements IPathfinder
 				successorNode_.connectedNode.priority = successorNode_.connectedNode.GetPathCost() + successorNode_.connectedNode.heuristic;
 				open_.enqueue(successorNode_.connectedNode); // add to open list so we can allow exploration
 				#if action_output
-				DebugLogger.GetInstance().AddToOpen(successorNode_.connectedNode);
+				actionOutput.AddToOpen(successorNode_.connectedNode);
 				#end
 			}
 		}
@@ -139,21 +157,31 @@ class AStar implements IPathfinder
 			// if the neighbour is not in the open set, add it.
 			successorNode_.connectedNode.SetParent(currentNode_);
 			#if action_output
-			DebugLogger.GetInstance().SetParent(successorNode_.connectedNode, currentNode_);
+			actionOutput.SetParent(successorNode_.connectedNode, currentNode_);
 			#end
+			
 			successorNode_.connectedNode.SetPathCost(currentNode_.GetPathCost() + successorNode_.distanceBetween);
 			#if cs
-			successorNode_.connectedNode.heuristic = heuristicFunction_.Invoke(successorNode_.connectedNode, endNode_);
+			successorNode_.connectedNode.heuristic = heuristicFunction.Invoke(successorNode_.connectedNode.GetPosition(), endNode_.GetPosition());
 			#else
-			successorNode_.connectedNode.heuristic = heuristicFunction_(successorNode_.connectedNode, endNode_); // set the heuristic for the node
+			successorNode_.connectedNode.heuristic = heuristicFunction(successorNode_.connectedNode.GetPosition(), endNode_.GetPosition()); // set the heuristic for the node
 			#end
 			
 			// since we are adding it to the queue for the first time, we need to set its priority
 			successorNode_.connectedNode.priority = successorNode_.connectedNode.GetPathCost() + successorNode_.connectedNode.heuristic;
 			open_.enqueue(successorNode_.connectedNode);
 			#if action_output
-			DebugLogger.GetInstance().AddToOpen(successorNode_.connectedNode);
+			actionOutput.AddToOpen(successorNode_.connectedNode);
 			#end
 		}
+	}
+	
+	public function GetActionOutput():ActionOutput
+	{
+		#if action_output
+		return actionOutput;
+		#else
+		throw "PathPlanner library has not been compiled with action output as needed. Recompile with compiler command -D action_output";
+		#end
 	}
 }
