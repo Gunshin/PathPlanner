@@ -3,11 +3,11 @@ package pathPlanner;
 // secondary node incase SetParent or similar
 class Action
 {
-	public var actionType:Int;
+	public var actionType:String;
 	public var primaryNode:Node;
 	public var secondaryNode:Node;
 	
-	public function new(actionType_:Int, primaryNode_:Node, secondaryNode_:Node)
+	public function new(actionType_:String, primaryNode_:Node, secondaryNode_:Node)
 	{
 		actionType = actionType_;
 		primaryNode = primaryNode_;
@@ -21,22 +21,6 @@ class Action
  */
 class ActionOutput 
 {
-	
-	public var actionTypes:Array<String> = [
-	"Expand",
-	"AddToOpen",
-	"AddToClose",
-	"SetParent"
-	];
-	
-	@:protected
-	var actionTypeMap:Map<String, Int> = [
-		"Expand" => 1,
-		"AddToOpen" => 2,
-		"AddToClosed" => 3,
-		"SetParent" => 4
-	];
-	
 	@:protected
 	var actionList:Array<Action> = new Array<Action>();
 
@@ -54,30 +38,9 @@ class ActionOutput
 	{
 		actionList = new Array<Action>();
 	}
-	
-	public function Expand(node:Node)
+
+	public function AddAction(action_:String, nodeOne_:Node, nodeTwo_:Node)
 	{
-		actionList.push(new Action(1, node, null));
+		actionList.push(new Action(action_, nodeOne_, nodeTwo_));
 	}
-	
-	public function AddToOpen(node:Node)
-	{
-		actionList.push(new Action(2, node, null));
-	}
-	
-	public function AddToClosed(node:Node)
-	{
-		actionList.push(new Action(3, node, null));
-	}
-	
-	public function SetParent(node:Node, parent:Node)
-	{
-		actionList.push(new Action(4, node, parent));
-	}
-	
-	public function GetActionKeysValue(actionKey:String)
-	{
-		return actionTypeMap.get(actionKey);
-	}
-	
 }

@@ -189,6 +189,7 @@ class GraphGridMap implements IGraphStructure
 	
 	public function GetNodeByIndex(x_:Int, y_:Int):Node
 	{
+		//return map[x_ + y_ * width];
 		return x_ >= 0 && y_ >= 0 && x_ < width && y_ < height ? map[x_ + y_ * width] : null;
 	}
 	

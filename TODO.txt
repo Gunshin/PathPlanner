@@ -9,6 +9,7 @@ decide on full implementation. currently does not inherit from IGraphStructure
 original running time release:
 	3.681081611e-005
 
+need to change forced neighbour checks to behind rather than current in front
 
 open list:
 	minimalist_node

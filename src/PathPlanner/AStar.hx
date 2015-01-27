@@ -54,7 +54,7 @@ class AStar implements IPathfinder
 		
 		open.enqueue(param_.startNode);
 		#if action_output
-		actionOutput.AddToOpen(param_.startNode);
+		actionOutput.AddAction("AddToOpen", param_.startNode, null);
 		#end
 		
 		while (!open.isEmpty())
@@ -63,7 +63,7 @@ class AStar implements IPathfinder
 			var currentNode:Node = open.dequeue();
 			closed.enqueue(currentNode);
 			#if action_output
-			actionOutput.AddToClosed(currentNode);
+			actionOutput.AddAction("AddToClosed", currentNode, null);
 			#end
 			
 			var neighbours:Array<DistanceNode>;
@@ -103,7 +103,7 @@ class AStar implements IPathfinder
 	):Void
 	{
 		#if action_output
-		actionOutput.Expand(successorNode_.connectedNode);
+		actionOutput.AddAction("Expand", successorNode_.connectedNode, null);
 		#end
 		if (open_.contains(successorNode_.connectedNode))
 		{
@@ -111,7 +111,7 @@ class AStar implements IPathfinder
 			{
 				successorNode_.connectedNode.SetParent(currentNode_);
 				#if action_output
-				actionOutput.SetParent(successorNode_.connectedNode, currentNode_);
+				actionOutput.AddAction("SetParent", successorNode_.connectedNode, currentNode_);
 				#end
 				
 				successorNode_.connectedNode.SetPathCost(currentNode_.GetPathCost() + successorNode_.distanceBetween);
@@ -133,7 +133,7 @@ class AStar implements IPathfinder
 			{
 				successorNode_.connectedNode.SetParent(currentNode_);
 				#if action_output
-				actionOutput.SetParent(successorNode_.connectedNode, currentNode_);
+				actionOutput.AddAction("SetParent", successorNode_.connectedNode, currentNode_);
 				#end
 				
 				successorNode_.connectedNode.SetPathCost(currentNode_.GetPathCost() + successorNode_.distanceBetween);
@@ -148,7 +148,7 @@ class AStar implements IPathfinder
 				successorNode_.connectedNode.priority = successorNode_.connectedNode.GetPathCost() + successorNode_.connectedNode.heuristic;
 				open_.enqueue(successorNode_.connectedNode); // add to open list so we can allow exploration
 				#if action_output
-				actionOutput.AddToOpen(successorNode_.connectedNode);
+				actionOutput.AddAction("AddToOpen", successorNode_.connectedNode, null);
 				#end
 			}
 		}
@@ -157,7 +157,7 @@ class AStar implements IPathfinder
 			// if the neighbour is not in the open set, add it.
 			successorNode_.connectedNode.SetParent(currentNode_);
 			#if action_output
-			actionOutput.SetParent(successorNode_.connectedNode, currentNode_);
+			actionOutput.AddAction("SetParent", successorNode_.connectedNode, currentNode_);
 			#end
 			
 			successorNode_.connectedNode.SetPathCost(currentNode_.GetPathCost() + successorNode_.distanceBetween);
@@ -171,7 +171,7 @@ class AStar implements IPathfinder
 			successorNode_.connectedNode.priority = successorNode_.connectedNode.GetPathCost() + successorNode_.connectedNode.heuristic;
 			open_.enqueue(successorNode_.connectedNode);
 			#if action_output
-			actionOutput.AddToOpen(successorNode_.connectedNode);
+			actionOutput.AddAction("AddToOpen", successorNode_.connectedNode, null);
 			#end
 		}
 	}

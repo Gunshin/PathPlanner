@@ -31,4 +31,9 @@ class Position
 		return y;
 	}
 	
+	public function ToString()
+	{
+		return GetX() + " _ " + GetY();
+	}
+	
 }

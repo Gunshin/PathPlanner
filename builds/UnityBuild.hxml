@@ -9,7 +9,8 @@ pathPlanner.Node
 pathPlanner.DistanceNode
 pathPlanner.IPathfinder
 pathPlanner.AStar
-pathPlanner.JPS
+pathPlanner.JPSO
+pathPlanner.JPSM
 pathPlanner.PathUtility
 pathPlanner.DebugLogger
 pathPlanner.IGraphStructure
