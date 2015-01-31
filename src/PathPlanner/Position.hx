@@ -31,9 +31,19 @@ class Position
 		return y;
 	}
 	
-	public function ToString()
+	public static inline function Equal(positionA_:Position, positionB_:Position):Bool
+	{
+		return positionA_.GetX() == positionB_.GetX() && positionA_.GetY() == positionB_.GetY();
+	}
+	
+	public function ToString():String
 	{
 		return GetX() + " _ " + GetY();
+	}
+	
+	public static inline function Distance(posA_:Position, posB_:Position):Float
+	{
+		return Math.sqrt(Math.pow(posA_.GetX() - posB_.GetX(), 2) + Math.pow(posA_.GetY() - posB_.GetY(), 2));
 	}
 	
 }

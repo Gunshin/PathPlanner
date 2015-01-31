@@ -30,3 +30,15 @@ minimalist_node:
 	priority
 
 	xy
+
+	
+	
+Notes
+
+attempted to modify the jpso algorithm to allow for more efficiency
+
+first attempt was based on storing directions/neighbours of jump points. works, but i have to check the pathcost of every node i explore
+
+second attempt was to modify the heuristic to allow nodes/directions facing the goal to be explored first as an attempt to further reduce exploration cost. did not work as suboptimal paths can be produced.
+
+third attempt is to only add the neighbours in the direction of travel when a jump point has been found. sounds pretty reasonable, have not finished.

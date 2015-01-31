@@ -8,17 +8,33 @@ import haxe.Int32;
 class PathUtility 
 {
 
-	static inline public function ReconstructPath(endNode_:Node):Array<Node>
+	static inline public function ReconstructPathFromNodes(endNode_:Node):Array<Position>
 	{
-		
-		var path:Array<Node> = new Array<Node>();
+		var path:Array<Position> = new Array<Position>();
 		var currentNode_:Node = endNode_;
 		
 		while (currentNode_ != null)
 		{
 			
-			path.push(currentNode_);
+			path.push(currentNode_.GetPosition());
 			currentNode_ = currentNode_.GetParent();
+			
+		}
+		path.reverse();
+		return path;
+		
+	}
+	
+	static inline public function ReconstructPathFromPositionMap(endPosition_:Position, positionMap_:Array<Position>, positionMapWidth_:Int):Array<Position>
+	{
+		var path:Array<Position> = new Array<Position>();
+		var currentPosition_:Position = endPosition_;
+		
+		while (currentPosition_ != null)
+		{
+			
+			path.push(currentPosition_);
+			currentPosition_ = positionMap_[currentPosition_.GetX() + currentPosition_.GetY() * positionMapWidth_];
 			
 		}
 		path.reverse();

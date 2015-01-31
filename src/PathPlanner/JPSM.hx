@@ -11,7 +11,7 @@ import cs.Lib;
  * ...
  * @author Michael Stephens
  */
-class JPSM implements IPathfinder 
+class JPS implements IPathfinder 
 {
 	@:protected
 	var map:GraphGridMap;
@@ -95,31 +95,10 @@ class JPSM implements IPathfinder
 		var open:PriorityQueue<Node> = new PriorityQueue<Node>(true, 128);
 		
 		// the start node is being treat as a jump point, so that its neighbours are added to the list
-		//ExpandJumpPoint(startNode, open);
-		
+		ExpandJumpPoint(startNode, open);
 		#if action_output
 		actionOutput.Expand(startNode);
 		#end
-		for ( i in 0...map.GetRawNeighbours(startNode).length)
-		{
-			var traverseCost = (i % 2) == 0 ? 1.4 : 1;
-			map.GetRawNeighbours(startNode)[i].SetPathCost(traverseCost);
-			
-			map.GetRawNeighbours(startNode)[i].heuristic = 
-			#if cs
-			heuristicFunction.Invoke(map.GetRawNeighbours(startNode)[i].GetPosition(), endNode.GetPosition());
-			#else
-			heuristicFunction(map.GetRawNeighbours(startNode)[i].GetPosition(), endNode.GetPosition());
-			#end
-			map.GetRawNeighbours(startNode)[i].priority = map.GetRawNeighbours(startNode)[i].GetPathCost() + map.GetRawNeighbours(startNode)[i].heuristic;
-			
-			#if action_output
-			actionOutput.SetParent(map.GetRawNeighbours(startNode)[i], startNode);
-			actionOutput.AddToOpen(map.GetRawNeighbours(startNode)[i]);
-			#end
-			
-			open.enqueue(map.GetRawNeighbours(startNode)[i]);
-		}
 		
 		while (!open.isEmpty())
 		{
@@ -161,6 +140,7 @@ class JPSM implements IPathfinder
 	
 	function Improve(currentNode_:Node, open_:PriorityQueue<Node>):Void
 	{
+		
 		#if debugging
 		DebugLogger.Assert(currentNode_ != null, "JPS:Improve: currentNode is null");
 		DebugLogger.Assert(open_ != null, "JPS:Improve: open_ is null");
@@ -176,49 +156,21 @@ class JPSM implements IPathfinder
 		
 		if (result != null)
 		{
-			for (i in 0...result.length)
+			// special case if the result is the end node
+			if (result == endNode)
 			{
-			
-				if (result[i] != null)
-				{
-					// special case if the result is the end node
-					if (result[i] == endNode)
-					{
-						result[i].priority = 0;
-						open_.enqueue(result[i]);
-						return;
-					}
-					
-					// found a jump point, lets expand it.
-					AddToQueue(result[i], open_);
-				}
+				result.priority = 0;
+				open_.enqueue(result);
 			}
+			
+			// found a jump point, lets expand it.
+			ExpandJumpPoint(result, open_);
 		}
 		
 	}
 	
-	function AddToQueue(node_:Node, open_:PriorityQueue<Node>)
-	{
-		#if debugging
-		DebugLogger.Assert(node_ != null, "node_: " + node_.GetPosition().ToString() + " is null");
-		DebugLogger.Assert(node_.GetParent() != null, "node_: " + node_.GetPosition().ToString() + " GetParent is null");
-		#end
-		
-		node_.SetPathCost(node_.GetParent().GetPathCost() + DistanceNode.Distance(node_, node_.GetParent()));
-			
-		node_.heuristic = 
-		#if cs
-		heuristicFunction.Invoke(node_.GetPosition(), endNode.GetPosition());
-		#else
-		heuristicFunction(node_.GetPosition(), endNode.GetPosition());
-		#end
-		node_.priority = node_.GetPathCost() + node_.heuristic;
-		
-		open_.enqueue(node_);
-	}
-	
 	// we expand the jump point by adding all of its neighbours to the open list.
-	/*function ExpandJumpPoint(jumpPoint_:Node, open_:PriorityQueue<Node>):Void
+	function ExpandJumpPoint(jumpPoint_:Node, open_:PriorityQueue<Node>):Void
 	{
 		var neighbours:Array<Node> = map.GetRawNeighbours(jumpPoint_);
 		for (i in 0...neighbours.length)
@@ -251,9 +203,9 @@ class JPSM implements IPathfinder
 				}
 			}
 		}
-	}*/
+	}
 	
-	function Jump(node_:Node, parentNode_:Node, length_:Int):Array<Node>
+	function Jump(node_:Node, parentNode_:Node, length_:Int):Node
 	{
 		#if debugging
 		DebugLogger.Assert(node_ != null, "JPS:Jump: node_ is null");
@@ -270,26 +222,35 @@ class JPSM implements IPathfinder
 			//diagonalTimer.Start();
 			var result = JumpDiagonal(x, y, dx, dy, length_);
 			//diagonalTimer.Stop();
-			return result;
+			if (result != null)
+			{
+				return result;
+			}
 		}
 		else if (dx != 0)
 		{
 			//horizontalTimer.Start();
 			var result = JumpHorizontal(x, y, dx, length_, true);
 			//horizontalTimer.Stop();
-			return result;
+			if (result != null)
+			{
+				return result;
+			}
 		}else if (dy != 0)
 		{
 			//verticalTimer.Start();
 			var result = JumpVertical(x, y, dy, length_, true);
 			//verticalTimer.Stop();
-			return result;
+			if (result != null)
+			{
+				return result;
+			}
 		}
 		
 		return null;
 	}
 	
-	function JumpHorizontal(x_:Int, y_:Int, dx_:Int, length_:Int, expanding_:Bool):Array<Node>
+	function JumpHorizontal(x_:Int, y_:Int, dx_:Int, length_:Int, expanding_:Bool):Node
 	{
 		
 		//var endTile_:Int = x_ + (length_ * dx_);
@@ -322,39 +283,13 @@ class JPSM implements IPathfinder
 				currentNode.SetPathCost(currentNode.GetParent().GetPathCost() + 1);
 			}
 			
-			
-			
 			// check to see if the current node has a forced neighbour, or is the end node
 			if ((currentNode == endNode) ||
 			((currentX + dx_ >= 0 && currentX + dx_ < map.GetWidth()) &&
-			(((y_ + 1 < map.GetHeight()) && (!map.GetNodeByIndex(currentX, y_ + 1).GetTraversable() && map.GetNodeByIndex(currentX + dx_, y_ + 1).GetTraversable())) || // forced neighbour above
-			((y_ - 1 >= 0) && (!map.GetNodeByIndex(currentX, y_ - 1).GetTraversable() && map.GetNodeByIndex(currentX + dx_, y_ - 1).GetTraversable())))))// forced neighbour below
+			((y_ + 1 < map.GetHeight()) && (!map.GetNodeByIndex(currentX, y_ + 1).GetTraversable() && map.GetNodeByIndex(currentX + dx_, y_ + 1).GetTraversable()) || // forced neighbour above
+			((y_ - 1 >= 0) && !map.GetNodeByIndex(currentX, y_ - 1).GetTraversable() && map.GetNodeByIndex(currentX + dx_, y_ - 1).GetTraversable()))))// forced neighbour below
 			{
-				// could be null since might be out of bounds
-				var neighbourAbove:Bool = (!map.GetNodeByIndex(currentX, y_ + 1).GetTraversable() && map.GetNodeByIndex(currentX + dx_, y_ + 1).GetTraversable());
-				var neighbourBelow:Bool = (!map.GetNodeByIndex(currentX, y_ - 1).GetTraversable() && map.GetNodeByIndex(currentX + dx_, y_ - 1).GetTraversable());
-				
-				//since we have found a jump point at the current node, we are taking the continuation node (the one we would have visited next) and any forced neighbours
-				var returnee = [map.GetNodeByIndex(currentX + dx_, y_).GetTraversable() ? map.GetNodeByIndex(currentX + dx_, y_) : null,
-				neighbourAbove ? map.GetNodeByIndex(currentX + dx_, y_ + 1) : null,
-				neighbourBelow ? map.GetNodeByIndex(currentX + dx_, y_ - 1) : null];
-				
-				if (expanding_)
-				{
-					// since during diagonal axis checking we do no 'expand' the nodes, the return is also ignored, so avoid setting parents since nullnull
-					for (i in returnee)
-					{
-						if (i != null)
-						{
-							i.SetParent(currentNode);
-							#if action_output
-							actionOutput.SetParent(i, currentNode);
-							#end
-						}
-					}
-				}
-				
-				return returnee;
+				return currentNode;
 			}
 			
 			currentX += dx_;
@@ -363,7 +298,7 @@ class JPSM implements IPathfinder
 		return null; // we hit the end of the map, either 0 or map.width
 	}
 	
-	function JumpVertical(x_:Int, y_:Int, dy_:Int, length_:Int, expanding_:Bool):Array<Node>
+	function JumpVertical(x_:Int, y_:Int, dy_:Int, length_:Int, expanding_:Bool):Node
 	{
 		
 		//var endTile_:Int = x_ + (length_ * dx_);
@@ -399,34 +334,10 @@ class JPSM implements IPathfinder
 			// check to see if the current node has a forced neighbour
 			if ((currentNode == endNode) ||
 			((currentY + dy_ >= 0 && currentY + dy_ < map.GetHeight()) &&
-			(((x_ + 1 < map.GetWidth()) && (!map.GetNodeByIndex(x_ + 1, currentY).GetTraversable() && map.GetNodeByIndex(x_ + 1, currentY + dy_).GetTraversable())) || // forced neighbour right
+			((x_ + 1 < map.GetWidth()) && (!map.GetNodeByIndex(x_ + 1, currentY).GetTraversable() && map.GetNodeByIndex(x_ + 1, currentY + dy_).GetTraversable()) || // forced neighbour right
 			((x_ - 1 >= 0) && (!map.GetNodeByIndex(x_ - 1, currentY).GetTraversable() && map.GetNodeByIndex(x_ - 1, currentY + dy_).GetTraversable())))))// forced neighbour left
 			{
-				// could be null since might be out of bounds
-				var neighbourLeft:Bool = (!map.GetNodeByIndex(x_ - 1, currentY).GetTraversable() && map.GetNodeByIndex(x_ - 1, currentY + dy_).GetTraversable());
-				var neighbourRight:Bool = (!map.GetNodeByIndex(x_ + 1, currentY).GetTraversable() && map.GetNodeByIndex(x_ + 1, currentY + dy_).GetTraversable());
-				
-				//since we have found a jump point at the current node, we are taking the continuation node (the one we would have visited next) and any forced neighbours
-				var returnee = [map.GetNodeByIndex(x_, currentY + dy_).GetTraversable() ? map.GetNodeByIndex(x_, currentY + dy_) : null,
-				neighbourLeft ? map.GetNodeByIndex(x_ - 1, currentY + dy_) : null,
-				neighbourRight ? map.GetNodeByIndex(x_ + 1, currentY + dy_) : null];
-				
-				if (expanding_)
-				{
-					// since during diagonal axis checking we do no 'expand' the nodes, the return is also ignored, so avoid setting parents since nullnull
-					for (i in returnee)
-					{
-						if (i != null)
-						{
-							i.SetParent(currentNode);
-							#if action_output
-							actionOutput.SetParent(i, currentNode);
-							#end
-						}
-					}
-				}
-				
-				return returnee;
+				return currentNode;
 			}
 			
 			currentY += dy_;
@@ -435,7 +346,7 @@ class JPSM implements IPathfinder
 		return null; // we hit the end of the map, either 0 or map.height
 	}
 	
-	function JumpDiagonal(x_:Int, y_:Int, dx_:Int, dy_:Int, length_:Int):Array<Node>
+	function JumpDiagonal(x_:Int, y_:Int, dx_:Int, dy_:Int, length_:Int):Node
 	{
 		
 		//var endTile_:Int = x_ + (length_ * dx_);
@@ -475,54 +386,16 @@ class JPSM implements IPathfinder
 			var vertical = JumpVertical(currentX, currentY + dy_, dy_, length_, false);
 			if (horizontal != null || vertical != null)
 			{
-				//since we have found a jump point at the current node, we are taking the continuation node (the one we would have visited next) and the direction neighbours relating to the axis
-				var returnee:Array<Node> = [map.GetNodeByIndex(currentX + dx_, currentY + dy_).GetTraversable() ? map.GetNodeByIndex(currentX + dx_, currentY + dy_) : null,
-				horizontal != null ? map.GetNodeByIndex(currentX + dx_, currentY) : null,
-				vertical != null ? map.GetNodeByIndex(currentX, currentY + dy_) : null];
-				
-				// set the parents
-				for (i in returnee)
-				{
-					if (i != null)
-					{
-						i.SetParent(currentNode);
-						#if action_output
-						actionOutput.SetParent(i, currentNode);
-						#end
-					}
-				}
-				
-				return returnee;
+				return currentNode;// , horizontal.found ? horizontal.jumpPoints[0] : vertical.jumpPoints[0]] };
 			}
 			
 			// check to see if the current node has a forced neighbour
 			if ((currentNode == endNode) ||
 			((currentY + dy_ >= 0 && currentY + dy_ < map.GetHeight() && currentX + dx_ >= 0 && currentX + dx_ < map.GetWidth()) && 
-			((!map.GetNodeByIndex(currentX - dx_, currentY).GetTraversable() && map.GetNodeByIndex(currentX - dx_, currentY + dy_).GetTraversable()) ||
+			((!map.GetNodeByIndex(currentX - dx_, currentY).GetTraversable() && map.GetNodeByIndex(currentX - dx_, currentY + dy_).GetTraversable()) &&
 			(!map.GetNodeByIndex(currentX, currentY - dy_).GetTraversable() && map.GetNodeByIndex(currentX + dx_, currentY - dy_).GetTraversable()))))
 			{
-				// a bit irritating but these could be out of bounds
-				var neighbourAboveLeft:Bool = (!map.GetNodeByIndex(currentX - dx_, currentY).GetTraversable() && map.GetNodeByIndex(currentX - dx_, currentY + dy_).GetTraversable());
-				var neighbourBelowRight:Bool = (!map.GetNodeByIndex(currentX, currentY - dy_).GetTraversable() && map.GetNodeByIndex(currentX + dx_, currentY - dy_).GetTraversable());
-				
-				//since we have found a jump point at the current node, we are taking the continuation node (the one we would have visited next) and any forced neighbours
-				var returnee:Array<Node> = [map.GetNodeByIndex(currentX + dx_, currentY + dy_).GetTraversable() ? map.GetNodeByIndex(currentX + dx_, currentY + dy_) : null,
-				neighbourAboveLeft ? map.GetNodeByIndex(currentX - dx_, currentY + dy_) : null,
-				neighbourBelowRight ? map.GetNodeByIndex(currentX + dx_, currentY - dy_) : null];
-				
-				// set the parents
-				for (i in returnee)
-				{
-					if (i != null)
-					{
-						i.SetParent(currentNode);
-						#if action_output
-						actionOutput.SetParent(i, currentNode);
-						#end
-					}
-				}
-				
-				return returnee;
+				return currentNode;
 			}
 			
 			currentX += dx_;

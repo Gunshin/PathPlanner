@@ -1,17 +1,17 @@
 package pathPlanner;
 
 // secondary node incase SetParent or similar
-class Action
+class Action<T>
 {
 	public var actionType:String;
-	public var primaryNode:Node;
-	public var secondaryNode:Node;
+	public var primary:T;
+	public var secondary:T;
 	
-	public function new(actionType_:String, primaryNode_:Node, secondaryNode_:Node)
+	public function new(actionType_:String, primary_:T, secondary_:T)
 	{
 		actionType = actionType_;
-		primaryNode = primaryNode_;
-		secondaryNode = secondaryNode_;
+		primary = primary_;
+		secondary = secondary_;
 	}
 }
 
@@ -19,28 +19,28 @@ class Action
  * ...
  * @author ...
  */
-class ActionOutput 
+class ActionOutput<T>
 {
 	@:protected
-	var actionList:Array<Action> = new Array<Action>();
+	var actionList:Array<Action<T>> = new Array<Action<T>>();
 
 	public function new() 
 	{
 		
 	}
 	
-	public function GetActionList():Array<Action>
+	public function GetActionList():Array<Action<T>>
 	{
 		return actionList;
 	}
 	
 	public function ResetActionList()
 	{
-		actionList = new Array<Action>();
+		actionList = new Array<Action<T>>();
 	}
 
-	public function AddAction(action_:String, nodeOne_:Node, nodeTwo_:Node)
+	public function AddAction(action_:String, primary_:T, secondary_:T)
 	{
-		actionList.push(new Action(action_, nodeOne_, nodeTwo_));
+		actionList.push(new Action<T>(action_, primary_, secondary_));
 	}
 }

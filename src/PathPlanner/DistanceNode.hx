@@ -23,15 +23,12 @@ class DistanceNode
 		}
 		else if (currentNode_ != null)
 		{
-			distanceBetween = Distance(connectedNode, currentNode_);
+			distanceBetween = Position.Distance(connectedNode.GetPosition(), currentNode_.GetPosition());
 			distanceCalculated = true;
 		}
 		
 	}
 	
-	public static inline function Distance(nodeA_:Node, nodeB_:Node):Float
-	{
-		return Math.sqrt(Math.pow(nodeA_.GetPosition().GetX() - nodeB_.GetPosition().GetX(), 2) + Math.pow(nodeA_.GetPosition().GetY() - nodeB_.GetPosition().GetY(), 2));
-	}
+	
 	
 }

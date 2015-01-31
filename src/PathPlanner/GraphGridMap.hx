@@ -210,6 +210,27 @@ class GraphGridMap implements IGraphStructure
 		}
 	}*/
 	
+	public function GenerateGraphGridMapMinimalist():GraphGridMapMinimalist
+	{
+		var minimalistGraph:GraphGridMapMinimalist = new GraphGridMapMinimalist(GetWidth(), GetHeight(), true);
+		for (j in 0...GetHeight())
+		{
+			for (i in 0...GetWidth())
+			{
+				if (map[i + j * GetWidth()].GetTraversable())
+				{
+					minimalistGraph.SetTraversableTrue(i, j);
+				}
+				else
+				{
+					minimalistGraph.SetTraversableFalse(i, j);
+				}
+			}
+		}
+		
+		return minimalistGraph;
+	}
+	
 	public function GetWidth():Int
 	{
 		return width;

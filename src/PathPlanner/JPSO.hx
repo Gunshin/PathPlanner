@@ -21,6 +21,7 @@ class JPSO implements IPathfinder
 	@:protected
 	var searchedMap:GraphGridMapMinimalist;
 	
+	@:protected
 	var heuristicFunction:
 	#if cs
 	cs.system.Func_3<Position,Position,Float>;
@@ -29,6 +30,7 @@ class JPSO implements IPathfinder
 	#end
 	
 	#if action_output
+	@:protected
 	var actionOutput:ActionOutput;
 	#end
 	
@@ -57,7 +59,7 @@ class JPSO implements IPathfinder
 		heuristicFunction = heuristicFunction_;
 	}
 	
-	public function FindPath(param_:PathplannerParameter):Array<Node>
+	public function FindPath(param_:PathplannerParameter):Array<Position>
 	{
 		verticalTimer.Reset();
 		horizontalTimer.Reset();
@@ -424,7 +426,7 @@ class JPSO implements IPathfinder
 		
 	}
 	
-	public function GetActionOutput():ActionOutput
+	public function GetActionOutput():ActionOutput<Node>
 	{
 		#if action_output
 		return actionOutput;

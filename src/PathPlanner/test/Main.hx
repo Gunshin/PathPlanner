@@ -18,7 +18,7 @@ import pathPlanner.GraphGridMap;
 
 typedef Tester = {x:Int, y:Int, flag:Bool}
 typedef Path = { start:Node, end:Node, optimalLength:Float }
-typedef PathResult = { pathplanner:IPathfinder, pathLength: Float, timeTaken: Float, actionCount: Int, path: Array<Node> }
+typedef PathResult = { pathplanner:IPathfinder, pathLength: Float, timeTaken: Float, actionCount: Int, path: Array<Position> }
 
 /**
  * ...
@@ -36,7 +36,6 @@ class Main
 	
 	public function new()
 	{
-		
 		/*var size:Int = 1000000;
 		
 		{
@@ -119,7 +118,7 @@ class Main
 			{
 				return Math.sqrt(Math.pow(nodeOne.GetX() - nodeTwo.GetX(), 2) + Math.pow(nodeOne.GetY() - nodeTwo.GetY(), 2));
 			});
-		var jps:IPathfinder = new JPSO(map, function(nodeOne, nodeTwo)
+		var jps:IPathfinder = new JPSPlus(map.GenerateGraphGridMapMinimalist(), function(nodeOne, nodeTwo)
 			{
 				return Math.sqrt(Math.pow(nodeOne.GetX() - nodeTwo.GetX(), 2) + Math.pow(nodeOne.GetY() - nodeTwo.GetY(), 2));
 			});
@@ -148,7 +147,7 @@ class Main
 
 		//trace("timerJPS took: " + (timerJPS.GetCurrentTotalTime() / 100000)/* + " timerAStar took: " + (timerAStar.GetCurrentTotalTime() / 1000)*/);
 		//trace("looking through: " + " _ " + paths[path].start.GetX() + "," + paths[path].start.GetY() + " t: " + paths[path].start.GetTraversable() + " _ " + paths[path].end.GetX() + "," + paths[path].end.GetY() + " t: " + paths[path].end.GetTraversable());
-		ComparePath( GetPath(pathfinder, paths[path], map), GetPath(jps, paths[path], map) , 0.1);
+		//ComparePath( GetPath(pathfinder, paths[path], map), GetPath(jps, paths[path], map) , 0.1);
 		
 		/*var i = 0;
 		for (path in paths)
@@ -179,7 +178,7 @@ class Main
 		pathParam.goalNode = path_.end;
 		var timer = new DebugRunningTimer();
 		timer.Start();
-		var path:Array<Node>;
+		var path:Array<Position>;
 		
 		//Timer.measure(function()
 		//{
@@ -192,12 +191,9 @@ class Main
 		DebugLogger.Assert(path != null, "The pathplanner: " + pathplannerName + " has produced a null path! action count: " + actionOutput.GetActionList().length);
 		
 		var pathLength:Float = 0;
-		for (node in path)
+		for (i in 0...path.length - 1)
 		{
-			if (node.GetParent() != null)
-			{
-				pathLength += Math.sqrt(Math.pow(node.GetPosition().GetX() - node.GetParent().GetPosition().GetX(), 2) + Math.pow(node.GetPosition().GetY() - node.GetParent().GetPosition().GetY(), 2));
-			}
+			pathLength += Math.sqrt(Math.pow(path[i].GetX() - path[i + 1].GetX(), 2) + Math.pow(path[i].GetY() - path[i + 1].GetY(), 2));
 		}
 		
 		return {pathplanner:pathfinder_, path: path, timeTaken: (timer.GetCurrentTotalTime() * 1000000), actionCount: actionOutput.GetActionList().length, pathLength: pathLength };

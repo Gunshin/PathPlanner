@@ -25,7 +25,7 @@ class AStar implements IPathfinder
 	#end
 	
 	#if action_output
-	var actionOutput:ActionOutput;
+	var actionOutput:ActionOutput<Node>;
 	#end
 	
 	public function new(heuristicFunction_:
@@ -39,7 +39,7 @@ class AStar implements IPathfinder
 		heuristicFunction = heuristicFunction_;
 	}
 	
-	public function FindPath(param_:PathplannerParameter):Array<Node>
+	public function FindPath(param_:PathplannerParameter):Array<Position>
 	{
 		//improveTimer.Reset();
 		
@@ -72,7 +72,7 @@ class AStar implements IPathfinder
 			{
 				//trace("improve A*: " + (improveTimer.GetCurrentTotalTime() * 1000000));
 				
-				return PathUtility.ReconstructPath(param_.goalNode);
+				return PathUtility.ReconstructPathFromNodes(param_.goalNode);
 			}
 			else if((neighbours = currentNode.GetNeighbours()).length > 0)
 			{
@@ -176,7 +176,7 @@ class AStar implements IPathfinder
 		}
 	}
 	
-	public function GetActionOutput():ActionOutput
+	public function GetActionOutput():ActionOutput<Node>
 	{
 		#if action_output
 		return actionOutput;
