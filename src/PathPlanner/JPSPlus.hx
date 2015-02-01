@@ -34,7 +34,12 @@ class JPSPlus implements IPathfinder
 	@:protected
 	var map:GraphGridMapMinimalist;
 	@:protected
+	var mapInv:GraphGridMapMinimalist;
+	
+	@:protected
 	var mapRotated:GraphGridMapMinimalist;
+	@:protected
+	var mapRotatedInv:GraphGridMapMinimalist;
 	
 	@:protected
 	var searchedMap:GraphGridMapMinimalist;
@@ -96,6 +101,9 @@ class JPSPlus implements IPathfinder
 		// generate a fresh rotated map as there may have been changes to the original map not reflected into the rotated
 		// i should probably just merge the two and take the slight performance hit when updating the graph
 		mapRotated = map.RotateMap();
+		mapInv = map.InvertMap();
+		mapRotatedInv = mapRotated.InvertMap();
+		
 		parentGrid = new Array<Position>();
 		pathCostGrid = new Array<Float>();
 		
@@ -271,124 +279,142 @@ class JPSPlus implements IPathfinder
 	
 	function JumpHorizontal(x_:Int, y_:Int, dx_:Int):Position
 	{
-		//horizontalTimer.Start();
-		//var endTile_:Int = x_ + (length_ * dx_);
-		/*
-		 * for now im going to make it simple and just have it search as far as possible
-		 * may be stupid on huge open terrain spaces as checking this horizontal line may not provide a good
-		 * result
-		 */
-		var currentX:Int = x_;
 		var aboveInMap:Bool = (y_ + 1 < map.GetHeight());
 		var belowInMap:Bool = (y_ - 1 >= 0);
 		
-		// cache efforts
-		var currentNodeAbove:Node = map.GetNodeByIndex(currentX, y_ + 1);
-		var currentNodeBelow:Node = map.GetNodeByIndex(currentX, y_ - 1);
-		var currentNodeAboveRight:Node = map.GetNodeByIndex(currentX + dx_, y_ + 1);
-		var currentNodeBelowRight:Node = map.GetNodeByIndex(currentX + dx_, y_ - 1);
-		
-		while (currentX >= 0 && currentX < map.GetWidth())
+		// if we are searching right
+		if (dx_ > 0)
 		{
-			
-			var currentNode:Node = map.GetNodeByIndex(currentX, y_);
-			
-			//check to see if current node is traversable
-			if (!currentNode.GetTraversable())
+			var possibleLength:Int = map.CheckBitsRight(x_, y_);
+			var jumpPositionAbove:Int = map.GetWidth() + 1; // put the default index outside of possible values so that the min returns the smallest correct number
+			if (aboveInMap)
 			{
-				// we hit a dead end
-				//horizontalTimer.Stop();
-				return null;
+				var aboveCheck:Int = map.CheckBitsRight(x_, y_ + 1);
+				jumpPositionAbove =  aboveCheck + mapInv.CheckBitsRight(x_ + aboveCheck, y_ + 1) - 1;
 			}
 			
-			#if action_output
-			actionOutput.AddAction("Explored", currentNode, null);
-			#end
-			
-			// removed from if statement so i could time
-			var flag:Bool = (currentNode == endNode) ||
-			((currentX + dx_ >= 0 && currentX + dx_ < map.GetWidth()) &&
-			((aboveInMap && (!currentNodeAbove.GetTraversable() && currentNodeAboveRight.GetTraversable())) || // forced neighbour above
-			(belowInMap && (!currentNodeBelow.GetTraversable() && currentNodeBelowRight.GetTraversable()))));
-			
-			// check to see if the current node has a forced neighbour, or is the end node
-			if (flag)// forced neighbour below
+			var jumpPositionBelow:Int = map.GetWidth() + 1; // put the default index outside of possible values so that the min returns the smallest correct number
+			if (aboveInMap)
 			{
-				//horizontalTimer.Stop();
-				return currentNode;
+				var belowCheck:Int = map.CheckBitsRight(x_, y_ - 1);
+				jumpPositionBelow = belowCheck + mapInv.CheckBitsRight(x_ + belowCheck, y_ - 1) - 1;
 			}
 			
-			currentX += dx_;
-
-			// attempting all caching efforts to reduce time
-			currentNodeAbove = currentNodeAboveRight;
-			currentNodeAboveRight = map.GetNodeByIndex(currentX + dx_, y_ + 1);
-			currentNodeBelow = currentNodeBelowRight;
-			currentNodeBelowRight = map.GetNodeByIndex(currentX + dx_, y_ - 1);
+			// this is guaranteed to work unless the map is some stupid 1 row configuration
+			// (if 2 or more rows are present, regardless of which row it runs in, one of the rows will return a value in map)
+			var closestJumpPosition:Int = cast(Math.min(jumpPositionAbove, jumpPositionBelow), Int);
+			
+			// we check to see if it is less than since the node could be at the very end of the map.
+			// may produce an irritating result if we expect to be able to traverse through diagonals if there are no horizontal or vertical traversals
+			// F T // this is an example where T = traversable
+			// T F
+			if (closestJumpPosition < possibleLength)
+			{
+				return new Position(x_ + closestJumpPosition, y_);
+			}
 		}
-		//horizontalTimer.Stop();
+		else // we are searching left
+		{
+			var possibleLength:Int = map.CheckBitsLeft(x_, y_);
+			var jumpPositionAbove:Int = map.GetWidth() + 1; // put the default index outside of possible values so that the min returns the smallest correct number
+			if (aboveInMap)
+			{
+				var aboveCheck:Int = map.CheckBitsLeft(x_, y_ + 1);
+				jumpPositionAbove =  aboveCheck + mapInv.CheckBitsLeft(x_ - aboveCheck, y_ + 1) - 1;
+			}
+			
+			var jumpPositionBelow:Int = map.GetWidth() + 1; // put the default index outside of possible values so that the min returns the smallest correct number
+			if (aboveInMap)
+			{
+				var belowCheck:Int = map.CheckBitsLeft(x_, y_ - 1);
+				jumpPositionBelow = belowCheck + mapInv.CheckBitsLeft(x_ - belowCheck, y_ - 1) - 1;
+			}
+			
+			// this is guaranteed to work unless the map is some stupid 1 row configuration
+			// (if 2 or more rows are present, regardless of which row it runs in, one of the rows will return a value in map)
+			var closestJumpPosition:Int = cast(Math.min(jumpPositionAbove, jumpPositionBelow), Int);
+			
+			// we check to see if it is less than since the node could be at the very end of the map.
+			// may produce an irritating result if we expect to be able to traverse through diagonals if there are no horizontal or vertical traversals
+			// F T // this is an example where T = traversable
+			// T F
+			if (closestJumpPosition < possibleLength)
+			{
+				return new Position(x_ - closestJumpPosition, y_);
+			}
+		}
+		
 		return null; // we hit the end of the map, either 0 or map.width
 	}
 	
 	function JumpVertical(x_:Int, y_:Int, dy_:Int):Node
 	{
-		//verticalTimer.Start();
-		//var endTile_:Int = x_ + (length_ * dx_);
-		/*
-		 * for now im going to make it simple and just have it search as far as possible
-		 * may be stupid on huge open terrain spaces as checking this vertical line may not provide a good
-		 * result
-		 */
-		var currentY:Int = y_;
 		var rightInMap:Bool = (x_ + 1 < map.GetWidth());
 		var leftInMap:Bool = (x_ - 1 >= 0);
 		
-		// cache efforts
-		var currentNodeRight:Node = map.GetNodeByIndex(x_ + 1, currentY);
-		var currentNodeLeft:Node = map.GetNodeByIndex(x_ - 1, currentY);
-		var currentNodeAboveRight:Node = map.GetNodeByIndex(x_ + 1, currentY + dy_);
-		var currentNodeAboveLeft:Node = map.GetNodeByIndex(x_ - 1, currentY + dy_);
-		
-		while (currentY >= 0 && currentY < map.GetHeight())
+		// if we are searching up
+		if (dy_ > 0)
 		{
-			
-			var currentNode:Node = map.GetNodeByIndex(x_, currentY);
-			
-			//check to see if current node is traversable
-			if (!currentNode.GetTraversable())
+			var possibleLength:Int = mapRotated.CheckBitsRight(y_, x_);
+			var jumpPositionRight:Int = map.GetHeight() + 1; // put the default index outside of possible values so that the min returns the smallest correct number
+			if (rightInMap)
 			{
-				//verticalTimer.Stop();
-				// we hit a dead end
-				return null;
+				var rightCheck:Int = map.CheckBitsRight(y_, x_ + 1); // the positive x axis on the inverted map equals the positive y axis of the normal map
+				jumpPositionRight =  rightCheck + mapInv.CheckBitsRight(y_ + rightCheck, x_ + 1) - 1;
 			}
 			
-			#if action_output
-			actionOutput.AddAction("Explored", currentNode, null);
-			#end
-			
-			//diagVertTimer.Start();
-			var flag:Bool = (currentNode == endNode) ||
-			((currentY + dy_ >= 0 && currentY + dy_ < map.GetHeight()) &&
-			((rightInMap && (!currentNodeRight.GetTraversable() && currentNodeAboveRight.GetTraversable())) || // forced neighbour right
-			(leftInMap && (!currentNodeLeft.GetTraversable() && currentNodeAboveLeft.GetTraversable()))));
-			//diagVertTimer.Stop();
-			// check to see if the current node has a forced neighbour
-			if (flag)// forced neighbour left
+			var jumpPositionLeft:Int = map.GetHeight() + 1; // put the default index outside of possible values so that the min returns the smallest correct number
+			if (leftInMap)
 			{
-				//verticalTimer.Stop();
-				return currentNode;
+				var leftCheck:Int = map.CheckBitsRight(y_, x_ - 1);
+				jumpPositionLeft = leftCheck + mapInv.CheckBitsRight(y_ + leftCheck, x_ - 1) - 1;
 			}
 			
-			currentY += dy_;
+			// this is guaranteed to work unless the map is some stupid 1 row configuration
+			// (if 2 or more rows are present, regardless of which row it runs in, one of the rows will return a value in map)
+			var closestJumpPosition:Int = cast(Math.min(jumpPositionRight, jumpPositionLeft), Int);
 			
-			// attempting all caching efforts to reduce time
-			currentNodeRight = currentNodeAboveRight;
-			currentNodeAboveRight = map.GetNodeByIndex(x_ + 1, currentY + dy_);
-			currentNodeLeft = currentNodeAboveLeft;
-			currentNodeAboveLeft = map.GetNodeByIndex(x_ - 1, currentY + dy_);
+			// we check to see if it is less than since the node could be at the very end of the map.
+			// may produce an irritating result if we expect to be able to traverse through diagonals if there are no horizontal or vertical traversals
+			// F T // this is an example where T = traversable
+			// T F
+			if (closestJumpPosition < possibleLength)
+			{
+				return new Position(x_, y_ + closestJumpPosition);
+			}
 		}
-		//verticalTimer.Stop();
-		return null; // we hit the end of the map, either 0 or map.height
+		else // we are searching left
+		{
+			var possibleLength:Int = map.CheckBitsLeft(y_, x_);
+			var jumpPositionRight:Int = map.GetHeight() + 1; // put the default index outside of possible values so that the min returns the smallest correct number
+			if (rightInMap)
+			{
+				var rightCheck:Int = map.CheckBitsLeft(y_, x_ + 1);
+				jumpPositionRight =  rightCheck + mapInv.CheckBitsLeft(y_ - rightCheck, x_ + 1) - 1;
+			}
+			
+			var jumpPositionLeft:Int = map.GetHeight() + 1; // put the default index outside of possible values so that the min returns the smallest correct number
+			if (leftInMap)
+			{
+				var leftCheck:Int = map.CheckBitsLeft(y_, x_ - 1);
+				jumpPositionLeft = leftCheck + mapInv.CheckBitsLeft(y_ - leftCheck, x_ - 1) - 1;
+			}
+			
+			// this is guaranteed to work unless the map is some stupid 1 row configuration
+			// (if 2 or more rows are present, regardless of which row it runs in, one of the rows will return a value in map)
+			var closestJumpPosition:Int = cast(Math.min(jumpPositionRight, jumpPositionLeft), Int);
+			
+			// we check to see if it is less than since the node could be at the very end of the map.
+			// may produce an irritating result if we expect to be able to traverse through diagonals if there are no horizontal or vertical traversals
+			// F T // this is an example where T = traversable
+			// T F
+			if (closestJumpPosition < possibleLength)
+			{
+				return new Position(x_, y_ - closestJumpPosition);
+			}
+		}
+		
+		return null; // we hit the end of the map, either 0 or map.width
 	}
 	
 	function JumpDiagonal(x_:Int, y_:Int, dx_:Int, dy_:Int):Node

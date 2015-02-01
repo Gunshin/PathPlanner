@@ -36,49 +36,36 @@ class Main
 	
 	public function new()
 	{
-		/*var size:Int = 1000000;
 		
+		var minMap:GraphGridMapMinimalist = new GraphGridMapMinimalist(32, 32, true);
+		minMap.SetTraversableFalse(7, 1);
+		minMap.SetTraversableFalse(4, 2);
+		minMap.SetTraversableFalse(5, 2);
+		minMap.SetTraversableFalse(2, 10);
+		
+		var rMap:GraphGridMapMinimalist = minMap.RotateMap();
+		
+		var invMap:GraphGridMapMinimalist = minMap.InvertMap();
+		
+		var x:Int = 2;
+		
+		var possibleLength:Int = minMap.CheckBitsRight(x, 1);
+		var belowRightMinMap:Int = minMap.CheckBitsRight(x, 2);
+		var jumpPositionBelow:Int = belowRightMinMap + invMap.CheckBitsRight(x + belowRightMinMap, 2) - 1;
+		
+		var aboveRightMinMap:Int = minMap.CheckBitsRight(x, 0);
+		var jumpPositionAbove:Int = aboveRightMinMap + invMap.CheckBitsRight(x + aboveRightMinMap, 0) - 1;
+		
+		var closestJumpPosition:Int = cast(Math.min(jumpPositionAbove, jumpPositionBelow), Int);
+		
+		var finalJumpPosition:Int = -1;
+		
+		if (closestJumpPosition <= possibleLength)
 		{
-			var vector:Vector<Tester> = new Vector<Tester>(size);
-			Timer.measure(function()
-			{
-				for (i in 0...size)
-				{
-					vector[i] = {x:0, y:0, flag:false};
-					vector[i].x+=1;
-				}
-			});
-			
-			Timer.measure(function()
-			{
-				for (i in 0...size)
-				{
-					vector[i].x+=1;
-				}
-			});
+			finalJumpPosition = closestJumpPosition;
 		}
 		
-		{
-			var array:Array<Tester> = new Array<Tester>();
-			Timer.measure(function()
-			{
-				for (i in 0...size)
-				{
-					array[i] = {x:0, y:0, flag:false};
-					array[i].x+=1;
-				}
-			});
-			
-			Timer.measure(function()
-			{
-				for (i in 0...size)
-				{
-					array[i].x+=1;
-				}
-			});
-		}*/
-		
-		
+		trace(finalJumpPosition);
 		
 		/*var num:haxe.Int32 = 0;
 		var s = Timer.stamp();
@@ -114,14 +101,14 @@ class Main
 		var map = LoadMap("resources/DragonAgeMaps/arena2.map");
 		var paths = LoadScenarios("resources/DragonAgeScenarios/arena2.map.scen", map, "	");
 		
-		var pathfinder:IPathfinder = new AStar(function(nodeOne, nodeTwo)
+		/*var pathfinder:IPathfinder = new AStar(function(nodeOne, nodeTwo)
 			{
 				return Math.sqrt(Math.pow(nodeOne.GetX() - nodeTwo.GetX(), 2) + Math.pow(nodeOne.GetY() - nodeTwo.GetY(), 2));
 			});
 		var jps:IPathfinder = new JPSPlus(map.GenerateGraphGridMapMinimalist(), function(nodeOne, nodeTwo)
 			{
 				return Math.sqrt(Math.pow(nodeOne.GetX() - nodeTwo.GetX(), 2) + Math.pow(nodeOne.GetY() - nodeTwo.GetY(), 2));
-			});
+			});*/
 		
 		var path:Int = 400;
 		

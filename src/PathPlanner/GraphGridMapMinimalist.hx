@@ -44,6 +44,12 @@ class GraphGridMapMinimalist
 		}
 	}
 	
+	/**
+	 * If you imagine that the graph has positive y as upwards, this function rotates the graph clockwise
+	 * The positive x axis of the rotated map becomes positive y of the normal map
+	 * 
+	 * @return
+	 */
 	public function RotateMap():GraphGridMapMinimalist
 	{
 		
@@ -55,11 +61,11 @@ class GraphGridMapMinimalist
 			{
 				if (GetTraversable(j, i) == true)
 				{
-					returnee.SetTraversableTrue(height - 1 - i, j);
+					returnee.SetTraversableTrue(i, j);
 				}
 				else
 				{
-					returnee.SetTraversableFalse(height - 1 - i, j);
+					returnee.SetTraversableFalse(i, j);
 				}
 			}
 		}
@@ -67,9 +73,35 @@ class GraphGridMapMinimalist
 		return returnee;
 	}
 	
-	/*
-	 * This function needs cleaning up as it really does not look nice
-	 * Too many if statements
+	public function InvertMap():GraphGridMapMinimalist
+	{
+		var returnee:GraphGridMapMinimalist = new GraphGridMapMinimalist(width, height, true);
+		
+		for (i in 0...height)
+		{
+			for (j in 0...width)
+			{
+				if (GetTraversable(j, i) == true)
+				{
+					returnee.SetTraversableFalse(j, i);
+				}
+				else
+				{
+					returnee.SetTraversableTrue(j, i);
+				}
+			}
+		}
+		
+		return returnee;
+	}
+	
+	/**
+	 * On a rotated map, this function acts as though it checks upwards on the normal map. To check upwards from example (2, 4), you need to call this function
+	 * with index (4, 2) or (indexY, indexX)
+	 * 
+	 * @param	indexX_
+	 * @param	indexY_
+	 * @return The amount of traversable bits to the right of the parameters
 	 */
 	public function CheckBitsRight(indexX_:Int, indexY_:Int):Int
 	{
@@ -120,6 +152,14 @@ class GraphGridMapMinimalist
 		
 	}
 	
+	/**
+	 * On a rotated map, this function acts as though it checks downwards on the normal map. To check downwards from example (2, 4), you need to call this function
+	 * with index (4, 2) or (indexY, indexX)
+	 * 
+	 * @param	indexX_ position x
+	 * @param	indexY_ position y
+	 * @return The amount of traversable bits to the left of the parameters
+	 */
 	public function CheckBitsLeft(indexX_:Int, indexY_:Int):Int
 	{
 		

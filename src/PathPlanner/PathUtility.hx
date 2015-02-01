@@ -123,8 +123,10 @@ class PathUtility
 	public static inline function CLZ(number:Int32):Int32
 	{
 		#if cpp
-		var n:Int32 = number;
-		return untyped __cpp__('__lzcnt(n)'); // special microsoft compiler intrinsic
+		var x:Int32 = number;
+		untyped __cpp__('unsigned long index');
+		untyped __cpp__('unsigned char zero = _BitScanReverse(&index, x)'); // special microsoft compiler intrinsic
+		return untyped __cpp__('index > 32 || zero == 0 ? 32 : 31 - index'); // need the zero byte to know whether the mask (x) is 0 or not
 		#else
 		number |= (number >> 1);
         number |= (number >> 2);
