@@ -13,10 +13,10 @@ package pathPlanner;
 class PathplannerParameter
 {
 
-	public var startX:Int = 0;
-	public var startY:Int = 0;
-	public var goalX:Int = 0;
-	public var goalY:Int = 0;
+	public var startX:Int = -1;
+	public var startY:Int = -1;
+	public var goalX:Int = -1;
+	public var goalY:Int = -1;
 	public var startNode:Node = null;
 	public var goalNode:Node = null;
 	

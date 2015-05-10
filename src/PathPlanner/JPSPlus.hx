@@ -1,5 +1,6 @@
 package pathPlanner;
 
+import de.polygonal.ds.Prioritizable;
 import de.polygonal.ds.PriorityQueue;
 
 #if cs
@@ -8,7 +9,7 @@ import cs.Lib;
 
 // the priority queue of polygonal requires me to implement two variables so that the element can be sorted correctly. However, i do not want
 // to bloat my Position classes with unnecessary data. In the future, i may swap out Position for an index since that is all i use position for.
-class PositionWrapper
+class PositionWrapper implements Prioritizable
 {
 	public var position:Int;
 	public var priority:Float = 0;
@@ -63,7 +64,7 @@ class JPSPlus implements IPathfinder
 	
 	#if action_output
 	@:protected
-	var actionOutput:ActionOutput<Position>;
+	var actionOutput:ActionOutput;
 	#end
 		
 	public function new(map_:GraphGridMapMinimalist, heuristicFunction_:
@@ -79,6 +80,16 @@ class JPSPlus implements IPathfinder
 		heuristicFunction = heuristicFunction_;
 	}
 	
+	/*var verticalTimer:DebugRunningTimer = new DebugRunningTimer();
+	var horizontalTimer:DebugRunningTimer = new DebugRunningTimer();
+	var diagonalTimer:DebugRunningTimer = new DebugRunningTimer();
+	var diagHorizTimer:DebugRunningTimer = new DebugRunningTimer();
+	var diagVertTimer:DebugRunningTimer = new DebugRunningTimer();
+	var jumpTimer:DebugRunningTimer = new DebugRunningTimer();
+	var improveTimer:DebugRunningTimer = new DebugRunningTimer();
+	var findTimer:DebugRunningTimer = new DebugRunningTimer();
+	var reconstructTimer:DebugRunningTimer = new DebugRunningTimer();*/
+	
 	public function FindPath(param_:PathplannerParameter):Array<Position>
 	{
 		#if debugging
@@ -92,11 +103,11 @@ class JPSPlus implements IPathfinder
 		horizontalTimer.Reset();
 		diagonalTimer.Reset();
 		jumpTimer.Reset();
-		improveTimer.Reset();*/
-		//findTimer.Reset();
-		//reconstructTimer.Reset();
+		improveTimer.Reset();
+		findTimer.Reset();
+		reconstructTimer.Reset();
 		
-		//findTimer.Start();
+		findTimer.Start();*/
 		
 		// generate a fresh rotated map as there may have been changes to the original map not reflected into the rotated
 		// i should probably just merge the two and take the slight performance hit when updating the graph
@@ -110,10 +121,10 @@ class JPSPlus implements IPathfinder
 		var startCoord:Position = new Position(param_.startX, param_.startY);
 		endCoord = new Position(param_.goalX, param_.goalY);
 		
-		searchedMap.SetMap(false);
+		searchedMap = new GraphGridMapMinimalist(map.GetWidth(), map.GetHeight(), false);
 
 		#if action_output
-		actionOutput.ResetActionList();
+		actionOutput = new ActionOutput();
 		#end
 		
 		searchedMap.SetTraversableTrue(startCoord.GetX(), startCoord.GetY()); // if we dont do this, the algorithm attempts to search the start node again which results in a cyclic reference
@@ -133,10 +144,10 @@ class JPSPlus implements IPathfinder
 			
 			if (Position.Equal(currentPosition, endCoord)) //if we have the goal, return?
 			{
-				
+				/*trace("found path: " + currentPosition.ToString() + " __ " + endCoord.ToString());
 				
 				//trace("jps __________________________________");
-				/*trace("vert: " + (verticalTimer.GetCurrentTotalTime() * 1000000));
+				trace("vert: " + (verticalTimer.GetCurrentTotalTime() * 1000000));
 				trace("hori: " + (horizontalTimer.GetCurrentTotalTime() * 1000000));
 				trace("diag: " + (diagonalTimer.GetCurrentTotalTime() * 1000000));
 				trace("jump: " + (jumpTimer.GetCurrentTotalTime() * 1000000));
@@ -144,15 +155,15 @@ class JPSPlus implements IPathfinder
 				
 				
 				reconstructTimer.Start();*/
-				//findTimer.Stop();
 				var path = PathUtility.ReconstructPathFromPositionMap(endCoord, parentGrid, map.GetWidth());
 				/*reconstructTimer.Stop();
 				
-				trace("reconstruct: " + (reconstructTimer.GetCurrentTotalTime() * 1000000));*/
+				trace("reconstruct: " + (reconstructTimer.GetCurrentTotalTime() * 1000000));
 				
-				//findTimer.Stop();
-				//trace("find: " + (findTimer.GetCurrentTotalTime() * 1000000));
+				findTimer.Stop();
+				trace("find: " + (findTimer.GetCurrentTotalTime() * 1000000));*/
 				
+				//Print("returning with path ________________________");
 				return path;
 			}
 			
@@ -160,11 +171,26 @@ class JPSPlus implements IPathfinder
 			Improve(currentPosition, open);
 			//improveTimer.Stop();
 		}
+		
+		//Print("returning null _____________________________");
 		return null;// no path is found
 	}
 	
+	var expansionDirections:Array<Position> = [
+		new Position(0, 1), //up
+		new Position(1, 0), //right
+		new Position(0, -1), //down
+		new Position(-1, 0), //left
+		new Position(-1, 1), //up left
+		new Position(1, 1), //up right
+		new Position(1, -1), //down right
+		new Position(-1, -1) //down left
+	];
+	
 	function Improve(currentPosition_:Position, open_:PriorityQueue<PositionWrapper>):Void
 	{
+		//Print("entered improve ______________________________");
+		
 		#if debugging
 		DebugLogger.Assert(currentPosition_ != null, "JPSPlus:Improve: currentNode is null");
 		DebugLogger.Assert(open_ != null, "JPSPlus:Improve: open_ is null");
@@ -173,50 +199,50 @@ class JPSPlus implements IPathfinder
 		actionOutput.AddAction("Expand", currentPosition_, null);
 		#end
 		
+		
+		
 		// loop through this positions direct neighbours
-		for (i in -1...2)
+		for (i in expansionDirections)
 		{
-			for (j in -1...2)
+			var x:Int = i.GetX() + currentPosition_.GetX();
+			var y:Int = i.GetY() + currentPosition_.GetY();
+			
+			// make sure we are in the map as a neighbour of a node could reference something not inside
+			// make sure we dont try to run a neighbour on the currentPosition (i != 0 && j != 0)
+			if (x >= 0 && x < map.GetWidth() &&
+			y >= 0 && y < map.GetHeight())
 			{
-				var x:Int = j + currentPosition_.GetX();
-				var y:Int = i + currentPosition_.GetY();
 				
-				// make sure we are in the map as a neighbour of a node could reference something not inside
-				// make sure we dont try to run a neighbour on the currentPosition (i != 0 && j != 0)
-				if (x >= 0 && x < map.GetWidth() &&
-				y >= 0 && x < map.GetHeight() &&
-				i != 0 && j != 0)
+				//jumpTimer.Start();
+				var result = Jump(currentPosition_, x, y);
+				//jumpTimer.Stop();
+				
+				// we dont want to do anything with this jump point if we already searched it
+				if (result != null && !searchedMap.GetTraversable(result.GetX(), result.GetY()))
 				{
 					
-					//jumpTimer.Start();
-					var result = Jump(currentPosition_, x, y);
-					//jumpTimer.Stop();
 					
-					// we dont want to do anything with this jump point if we already searched it
-					if (result != null && !searchedMap.GetTraversable(result.GetX(), result.GetY()))
+					searchedMap.SetTraversableTrue(result.GetX(), result.GetY());
+					
+					// set the new jump point (result) to have its parent be the current expanded jump point
+					parentGrid[result.GetX() + result.GetY() * map.GetWidth()] = currentPosition_;
+					#if action_output
+					actionOutput.AddAction("SetParent", result, currentPosition_);
+					#end
+					
+					// special case if the result is the end node
+					if (Position.Equal(result, endCoord))
 					{
-						searchedMap.SetTraversableTrue(result.GetX(), result.GetY());
-						
-						// set the new jump point (result) to have its parent be the current expanded jump point
-						parentGrid[result.GetX() + result.GetY() * map.GetWidth()] = currentPosition_;
-						#if action_output
-						actionOutput.AddAction("SetParent", result, currentPosition_);
-						#end
-						
-						// special case if the result is the end node
-						if (Position.Equal(result, endCoord))
-						{
-							open_.enqueue(new PositionWrapper(0, result));
-							return;
-						}
-						
-						// found a jump point, lets add it.
-						AddToQueue(result, open_);
+						open_.enqueue(new PositionWrapper(0, result));
+						return;
 					}
 					
+					// found a jump point, lets add it.
+					AddToQueue(result, open_);
 				}
 			}
 		}
+		
 	}
 	
 	function AddToQueue(position_:Position, open_:PriorityQueue<PositionWrapper>)
@@ -224,11 +250,11 @@ class JPSPlus implements IPathfinder
 		var parent:Position = parentGrid[position_.GetX() + position_.GetY() * map.GetWidth()];
 		
 		#if debugging
-		DebugLogger.Assert(node_ != null, "position_: " + position_.ToString() + " is null");
+		DebugLogger.Assert(position_ != null, "position_: " + position_.ToString() + " is null");
 		DebugLogger.Assert(parent != null, "position_: " + position_.ToString() + " parent map is null");
 		#end
-		
-		var pathCost:Float = pathCostGrid[position_.GetX() + position_.GetY() * map.GetWidth()] = pathCostGrid[parent.GetX() + parent.GetY() * map.GetWidth()] + Position.Distance(position_, parent);
+		pathCostGrid[position_.GetX() + position_.GetY() * map.GetWidth()] = pathCostGrid[parent.GetX() + parent.GetY() * map.GetWidth()] + Position.Distance(position_, parent);
+		var pathCost:Float = pathCostGrid[position_.GetX() + position_.GetY() * map.GetWidth()];
 		
 		var heuristic:Float = 
 		#if cs
@@ -248,7 +274,7 @@ class JPSPlus implements IPathfinder
 	{
 		#if debugging
 		DebugLogger.Assert(currentPosition_ != null, "JPSPlus:Jump: currentPosition_ is null");
-		DebugLogger.Assert(neighbourPosition_ != null, "JPSPlus:Jump: neighbourPosition_ is null");
+		DebugLogger.Assert(neighbourX_ >= 0 && neighbourX_ < map.GetWidth() && neighbourY_ >= 0 && neighbourY_ < map.GetHeight(), "JPSPlus:Jump: neighbourPosition_ is null");
 		#end
 
 		var dx:Int = cast(Math.min(Math.max((neighbourX_ - currentPosition_.GetX()), -1), 1), Int);
@@ -274,6 +300,8 @@ class JPSPlus implements IPathfinder
 			//verticalTimer.Stop();
 		}
 		
+		
+		
 		return result;
 	}
 	
@@ -286,6 +314,13 @@ class JPSPlus implements IPathfinder
 		if (dx_ > 0)
 		{
 			var possibleLength:Int = map.CheckBitsRight(x_, y_);
+			
+			//check for endCoord on this line and is accessible
+			if (y_ == endCoord.GetY() && endCoord.GetX() >= x_ && endCoord.GetX() <= x_ + possibleLength)
+			{
+				return endCoord;
+			}
+			
 			var jumpPositionAbove:Int = map.GetWidth() + 1; // put the default index outside of possible values so that the min returns the smallest correct number
 			if (aboveInMap)
 			{
@@ -294,7 +329,7 @@ class JPSPlus implements IPathfinder
 			}
 			
 			var jumpPositionBelow:Int = map.GetWidth() + 1; // put the default index outside of possible values so that the min returns the smallest correct number
-			if (aboveInMap)
+			if (belowInMap)
 			{
 				var belowCheck:Int = map.CheckBitsRight(x_, y_ - 1);
 				jumpPositionBelow = belowCheck + mapInv.CheckBitsRight(x_ + belowCheck, y_ - 1) - 1;
@@ -316,6 +351,13 @@ class JPSPlus implements IPathfinder
 		else // we are searching left
 		{
 			var possibleLength:Int = map.CheckBitsLeft(x_, y_);
+			
+			//check for endCoord on this line and is accessible
+			if (y_ == endCoord.GetY() && endCoord.GetX() <= x_ && endCoord.GetX() >= x_ - possibleLength)
+			{
+				return endCoord;
+			}
+			
 			var jumpPositionAbove:Int = map.GetWidth() + 1; // put the default index outside of possible values so that the min returns the smallest correct number
 			if (aboveInMap)
 			{
@@ -324,7 +366,7 @@ class JPSPlus implements IPathfinder
 			}
 			
 			var jumpPositionBelow:Int = map.GetWidth() + 1; // put the default index outside of possible values so that the min returns the smallest correct number
-			if (aboveInMap)
+			if (belowInMap)
 			{
 				var belowCheck:Int = map.CheckBitsLeft(x_, y_ - 1);
 				jumpPositionBelow = belowCheck + mapInv.CheckBitsLeft(x_ - belowCheck, y_ - 1) - 1;
@@ -347,27 +389,33 @@ class JPSPlus implements IPathfinder
 		return null; // we hit the end of the map, either 0 or map.width
 	}
 	
-	function JumpVertical(x_:Int, y_:Int, dy_:Int):Node
+	function JumpVertical(x_:Int, y_:Int, dy_:Int):Position
 	{
 		var rightInMap:Bool = (x_ + 1 < map.GetWidth());
 		var leftInMap:Bool = (x_ - 1 >= 0);
-		
 		// if we are searching up
 		if (dy_ > 0)
 		{
 			var possibleLength:Int = mapRotated.CheckBitsRight(y_, x_);
-			var jumpPositionRight:Int = map.GetHeight() + 1; // put the default index outside of possible values so that the min returns the smallest correct number
-			if (rightInMap)
+			
+			//check for endCoord on this line and is accessible
+			if (x_ == endCoord.GetX() && endCoord.GetY() >= y_ && endCoord.GetY() <= y_ + possibleLength)
 			{
-				var rightCheck:Int = map.CheckBitsRight(y_, x_ + 1); // the positive x axis on the inverted map equals the positive y axis of the normal map
-				jumpPositionRight =  rightCheck + mapInv.CheckBitsRight(y_ + rightCheck, x_ + 1) - 1;
+				return endCoord;
 			}
 			
-			var jumpPositionLeft:Int = map.GetHeight() + 1; // put the default index outside of possible values so that the min returns the smallest correct number
+			var jumpPositionRight:Int = mapRotated.GetHeight() + 1; // put the default index outside of possible values so that the min returns the smallest correct number
+			if (rightInMap)
+			{
+				var rightCheck:Int = mapRotated.CheckBitsRight(y_, x_ + 1); // the positive x axis on the inverted map equals the positive y axis of the normal map
+				jumpPositionRight =  rightCheck + mapRotatedInv.CheckBitsRight(y_ + rightCheck, x_ + 1) - 1;
+			}
+			
+			var jumpPositionLeft:Int = mapRotated.GetHeight() + 1; // put the default index outside of possible values so that the min returns the smallest correct number
 			if (leftInMap)
 			{
-				var leftCheck:Int = map.CheckBitsRight(y_, x_ - 1);
-				jumpPositionLeft = leftCheck + mapInv.CheckBitsRight(y_ + leftCheck, x_ - 1) - 1;
+				var leftCheck:Int = mapRotated.CheckBitsRight(y_, x_ - 1);
+				jumpPositionLeft = leftCheck + mapRotatedInv.CheckBitsRight(y_ + leftCheck, x_ - 1) - 1;
 			}
 			
 			// this is guaranteed to work unless the map is some stupid 1 row configuration
@@ -383,21 +431,28 @@ class JPSPlus implements IPathfinder
 				return new Position(x_, y_ + closestJumpPosition);
 			}
 		}
-		else // we are searching left
+		else // we are searching down
 		{
-			var possibleLength:Int = map.CheckBitsLeft(y_, x_);
-			var jumpPositionRight:Int = map.GetHeight() + 1; // put the default index outside of possible values so that the min returns the smallest correct number
-			if (rightInMap)
+			var possibleLength:Int = mapRotated.CheckBitsLeft(y_, x_);
+			
+			//check for endCoord on this line and is accessible
+			if (x_ == endCoord.GetX() && endCoord.GetY() <= y_ && endCoord.GetY() >= y_ - possibleLength)
 			{
-				var rightCheck:Int = map.CheckBitsLeft(y_, x_ + 1);
-				jumpPositionRight =  rightCheck + mapInv.CheckBitsLeft(y_ - rightCheck, x_ + 1) - 1;
+				return endCoord;
 			}
 			
-			var jumpPositionLeft:Int = map.GetHeight() + 1; // put the default index outside of possible values so that the min returns the smallest correct number
+			var jumpPositionRight:Int = mapRotated.GetHeight() + 1; // put the default index outside of possible values so that the min returns the smallest correct number
+			if (rightInMap)
+			{
+				var rightCheck:Int = mapRotated.CheckBitsLeft(y_, x_ + 1);
+				jumpPositionRight =  rightCheck + mapRotatedInv.CheckBitsLeft(y_ - rightCheck, x_ + 1) - 1;
+			}
+			
+			var jumpPositionLeft:Int = mapRotated.GetHeight() + 1; // put the default index outside of possible values so that the min returns the smallest correct number
 			if (leftInMap)
 			{
-				var leftCheck:Int = map.CheckBitsLeft(y_, x_ - 1);
-				jumpPositionLeft = leftCheck + mapInv.CheckBitsLeft(y_ - leftCheck, x_ - 1) - 1;
+				var leftCheck:Int = mapRotated.CheckBitsLeft(y_, x_ - 1);
+				jumpPositionLeft = leftCheck + mapRotatedInv.CheckBitsLeft(y_ - leftCheck, x_ - 1) - 1;
 			}
 			
 			// this is guaranteed to work unless the map is some stupid 1 row configuration
@@ -417,52 +472,41 @@ class JPSPlus implements IPathfinder
 		return null; // we hit the end of the map, either 0 or map.width
 	}
 	
-	function JumpDiagonal(x_:Int, y_:Int, dx_:Int, dy_:Int):Node
+	function JumpDiagonal(x_:Int, y_:Int, dx_:Int, dy_:Int):Position
 	{
-		
-		//var endTile_:Int = x_ + (length_ * dx_);
-		/*
-		 * for now im going to make it simple and just have it search as far as possible
-		 * may be stupid on huge open terrain spaces as checking this vertical line may not provide a good
-		 * result
-		 * 
-		 * Also, haxe does not have the standard great for loops inherent in most languages, so we have do do some magic?
-		 */
-		
 		var currentX:Int = x_;
 		var currentY:Int = y_;
 		
 		while (currentY >= 0 && currentY < map.GetHeight() && currentX >= 0 && currentX < map.GetWidth())
 		{
-			var currentNode:Node = map.GetNodeByIndex(currentX, currentY);
 			
 			//check to see if current node is traversable
 			if ((currentY < 0 || currentY >= map.GetHeight() || currentX < 0 || currentX >= map.GetWidth()) || 
-			!currentNode.GetTraversable())
+			!map.GetTraversable(currentX, currentY))
 			{
 				// we hit a dead end
 				return null;
 			}
 			
 			#if action_output
-			actionOutput.AddAction("Explored", currentNode, null);
+			actionOutput.AddAction("Explored", new Position(currentX, currentY), null);
 			#end
 			
 			//check horizontal + vertical directions
-			var horizontal = JumpHorizontal(currentX + dx_, currentY, dx_, length_, false);
-			var vertical = JumpVertical(currentX, currentY + dy_, dy_, length_, false);
+			var horizontal = JumpHorizontal(currentX + dx_, currentY, dx_);
+			var vertical = JumpVertical(currentX, currentY + dy_, dy_);
 			if (horizontal != null || vertical != null)
 			{
-				return currentNode;
+				return new Position(currentX, currentY);
 			}
 			
 			// check to see if the current node has a forced neighbour
-			if ((currentNode == endNode) ||
+			if (Position.Equal(new Position(currentX, currentY), endCoord) ||
 			((currentY + dy_ >= 0 && currentY + dy_ < map.GetHeight() && currentX + dx_ >= 0 && currentX + dx_ < map.GetWidth()) && 
-			((!map.GetNodeByIndex(currentX - dx_, currentY).GetTraversable() && map.GetNodeByIndex(currentX - dx_, currentY + dy_).GetTraversable()) ||
-			(!map.GetNodeByIndex(currentX, currentY - dy_).GetTraversable() && map.GetNodeByIndex(currentX + dx_, currentY - dy_).GetTraversable()))))
+			((!map.GetTraversable(currentX - dx_, currentY) && map.GetTraversable(currentX - dx_, currentY + dy_)) ||
+			(!map.GetTraversable(currentX, currentY - dy_) && map.GetTraversable(currentX + dx_, currentY - dy_)))))
 			{
-				return currentNode;
+				return new Position(currentX, currentY);
 			}
 			
 			currentX += dx_;
@@ -476,9 +520,46 @@ class JPSPlus implements IPathfinder
 	function TracePath(endGoal_:Position):Array<Position>
 	{
 		
+		var currentPos:Position = endGoal_;
+		
+		var returnPath:Array<Position> = new Array<Position>();
+		
+		while (currentPos != null)
+		{
+			returnPath.push(currentPos);
+			currentPos = parentGrid[currentPos.GetX() + currentPos.GetY() * map.GetWidth()];
+		}
+		
+		return returnPath;
 	}
 	
-	public function GetActionOutput():ActionOutput<Position>
+	var funcPrint:
+	#if cs
+	cs.system.Action_1<String>;
+	#else
+	String->Void;
+	#end
+	
+	public function AttachPrint(funcPrint_:
+	#if cs
+	cs.system.Action_1<String>
+	#else
+	String->Void
+	#end)
+	{
+		funcPrint = funcPrint_;
+	}
+	
+	function Print(message_:String):Void
+	{
+		#if cs
+		funcPrint.Invoke(message_);
+		#else
+		funcPrint(message_);
+		#end
+	}
+	
+	public function GetActionOutput():ActionOutput
 	{
 		#if action_output
 		return actionOutput;

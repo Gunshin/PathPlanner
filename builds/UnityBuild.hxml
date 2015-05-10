@@ -11,8 +11,10 @@ pathPlanner.IPathfinder
 pathPlanner.AStar
 pathPlanner.JPSO
 pathPlanner.JPSM
+pathPlanner.JPSPlus
 pathPlanner.PathUtility
 pathPlanner.DebugLogger
+pathPlanner.ActionOutput
 pathPlanner.IGraphStructure
 pathPlanner.GraphStructureIndirect
 pathPlanner.GraphGridMap

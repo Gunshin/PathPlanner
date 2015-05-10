@@ -11,5 +11,5 @@ interface IPathfinder
 	// the only thing that is used within debug logger atm is assert
 	//public function AttachDebugLogger(debugLogger_:DebugLogger):Void;
 	
-	public function GetActionOutput():ActionOutput<Dynamic>;
+	public function GetActionOutput():ActionOutput;
 }

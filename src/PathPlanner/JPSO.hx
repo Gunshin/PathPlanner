@@ -34,7 +34,7 @@ class JPSO implements IPathfinder
 	var actionOutput:ActionOutput;
 	#end
 	
-	var verticalTimer:DebugRunningTimer = new DebugRunningTimer();
+	/*var verticalTimer:DebugRunningTimer = new DebugRunningTimer();
 	var horizontalTimer:DebugRunningTimer = new DebugRunningTimer();
 	var diagonalTimer:DebugRunningTimer = new DebugRunningTimer();
 	var diagHorizTimer:DebugRunningTimer = new DebugRunningTimer();
@@ -43,7 +43,7 @@ class JPSO implements IPathfinder
 	var improveTimer:DebugRunningTimer = new DebugRunningTimer();
 	var findTimer:DebugRunningTimer = new DebugRunningTimer();
 	var reconstructTimer:DebugRunningTimer = new DebugRunningTimer();
-	var t:DebugRunningTimer = new DebugRunningTimer();
+	var t:DebugRunningTimer = new DebugRunningTimer();*/
 		
 	public function new(map_:GraphGridMap, heuristicFunction_:
 		#if cs
@@ -61,7 +61,7 @@ class JPSO implements IPathfinder
 	
 	public function FindPath(param_:PathplannerParameter):Array<Position>
 	{
-		verticalTimer.Reset();
+		/*verticalTimer.Reset();
 		horizontalTimer.Reset();
 		diagonalTimer.Reset();
 		diagHorizTimer.Reset();
@@ -70,9 +70,9 @@ class JPSO implements IPathfinder
 		improveTimer.Reset();
 		findTimer.Reset();
 		reconstructTimer.Reset();
-		t.Reset();
+		t.Reset();*/
 		
-		findTimer.Start();
+		//findTimer.Start();
 		
 		var startNode:Node;
 		
@@ -100,7 +100,7 @@ class JPSO implements IPathfinder
 		
 		open.enqueue(startNode);
 		#if action_output
-		actionOutput.AddAction("AddToOpen", startNode, null);
+		actionOutput.AddAction("AddToOpen", startNode.GetPosition(), null);
 		#end
 		
 		
@@ -114,31 +114,31 @@ class JPSO implements IPathfinder
 				
 				
 				//trace("jps __________________________________");
-				trace("vert: " + (verticalTimer.GetCurrentTotalTime() * 1000000));
+				/*trace("vert: " + (verticalTimer.GetCurrentTotalTime() * 1000000));
 				trace("hori: " + (horizontalTimer.GetCurrentTotalTime() * 1000000));
 				trace("diag: " + (diagonalTimer.GetCurrentTotalTime() * 1000000));
 				trace("diagVert: " + (diagVertTimer.GetCurrentTotalTime() * 1000000));
 				trace("diagHoriz: " + (diagHorizTimer.GetCurrentTotalTime() * 1000000));
 				trace("jump: " + (jumpTimer.GetCurrentTotalTime() * 1000000));
 				trace("improve: " + (improveTimer.GetCurrentTotalTime() * 1000000));
-				trace("_______t______: " + (t.GetCurrentTotalTime() * 1000000));
+				trace("_______t______: " + (t.GetCurrentTotalTime() * 1000000));*/
 				
 				
-				reconstructTimer.Start();
-				var path = PathUtility.ReconstructPath(endNode);
-				reconstructTimer.Stop();
+				//reconstructTimer.Start();
+				var path = PathUtility.ReconstructPathFromNodes(endNode);
+				//reconstructTimer.Stop();
 				
-				trace("reconstruct: " + (reconstructTimer.GetCurrentTotalTime() * 1000000));
+				//trace("reconstruct: " + (reconstructTimer.GetCurrentTotalTime() * 1000000));
 				
-				findTimer.Stop();
-				trace("find: " + (findTimer.GetCurrentTotalTime() * 1000000));
+				//findTimer.Stop();
+				//trace("find: " + (findTimer.GetCurrentTotalTime() * 1000000));
 				
 				return path;
 			}
 			
-			improveTimer.Start();
+			//improveTimer.Start();
 			Improve(currentNode, open);
-			improveTimer.Stop();
+			//improveTimer.Stop();
 		}
 		
 		return null;// no path is found
@@ -152,25 +152,26 @@ class JPSO implements IPathfinder
 		DebugLogger.Assert(heuristicFunction != null, "JPS:Improve: heuristicFunction_ is null");
 		#end
 		#if action_output
-		actionOutput.AddAction("Expand", currentNode_, null);
+		actionOutput.AddAction("Expand", currentNode_.GetPosition(), null);
 		#end
 		
 		for (neighbour in map.GetRawNeighbours(currentNode_))
 		{
 			if (neighbour != null)
 			{
-				jumpTimer.Start();
+				//jumpTimer.Start();
 				var result = Jump(neighbour, currentNode_, 0);
-				jumpTimer.Stop();
+				//jumpTimer.Stop();
 				
 				// we dont want to do anything with this jump point if we already searched it
-				if (result != null && !searchedMap.GetTraversable(result.GetPosition().GetX(), result.GetPosition().GetY()))
+				if (result != null && (!searchedMap.GetTraversable(result.GetPosition().GetX(), result.GetPosition().GetY()) || 
+				currentNode_.GetPathCost() + Position.Distance(result.GetPosition(), currentNode_.GetPosition()) < result.GetPathCost()))
 				{
 					searchedMap.SetTraversableTrue(result.GetPosition().GetX(), result.GetPosition().GetY());
 					// set the new jump point (result) to have its parent be the current expanded jump point
 					result.SetParent(currentNode_);
 					#if action_output
-					actionOutput.AddAction("SetParent", result, currentNode_);
+					actionOutput.AddAction("SetParent", result.GetPosition(), currentNode_.GetPosition());
 					#end
 					
 					// special case if the result is the end node
@@ -196,7 +197,7 @@ class JPSO implements IPathfinder
 		DebugLogger.Assert(node_.GetParent() != null, "node_: " + node_.GetPosition().ToString() + " GetParent is null");
 		#end
 		
-		node_.SetPathCost(node_.GetParent().GetPathCost() + DistanceNode.Distance(node_, node_.GetParent()));
+		node_.SetPathCost(node_.GetParent().GetPathCost() + Position.Distance(node_.GetPosition(), node_.GetParent().GetPosition()));
 		
 		node_.heuristic = 
 		#if cs
@@ -204,13 +205,20 @@ class JPSO implements IPathfinder
 		#else
 		heuristicFunction(node_.GetPosition(), endNode.GetPosition());
 		#end
-		node_.priority = node_.GetPathCost() + node_.heuristic;
 		
 		#if action_output
-		actionOutput.AddAction("AddToOpen", node_, null);
+		actionOutput.AddAction("AddToOpen", node_.GetPosition(), null);
 		#end
 		
-		open_.enqueue(node_);
+		if (!open_.contains(node_))
+		{
+			node_.priority = node_.GetPathCost() + node_.heuristic;
+			open_.enqueue(node_);
+		}
+		else
+		{
+			open_.reprioritize(node_, node_.GetPathCost() + node_.heuristic);
+		}
 	}
 	
 	function Jump(node_:Node, parentNode_:Node, length_:Int):Node
@@ -229,9 +237,9 @@ class JPSO implements IPathfinder
 		
 		if (dx != 0 && dy != 0) // check diag first since we apply a horizontal and vertical search on the node inside JumpDiagonal anyways (dont need to do it twice)
 		{
-			diagonalTimer.Start();
+			//diagonalTimer.Start();
 			result = JumpDiagonal(x, y, dx, dy, length_);
-			diagonalTimer.Stop();
+			//diagonalTimer.Stop();
 		}
 		else if (dx != 0)
 		{
@@ -250,7 +258,7 @@ class JPSO implements IPathfinder
 	
 	function JumpHorizontal(x_:Int, y_:Int, dx_:Int, length_:Int, expanding_:Bool):Node
 	{
-		horizontalTimer.Start();
+		//horizontalTimer.Start();
 		//var endTile_:Int = x_ + (length_ * dx_);
 		/*
 		 * for now im going to make it simple and just have it search as far as possible
@@ -276,12 +284,12 @@ class JPSO implements IPathfinder
 			if (!currentNode.GetTraversable())
 			{
 				// we hit a dead end
-				horizontalTimer.Stop();
+				//horizontalTimer.Stop();
 				return null;
 			}
 			
 			#if action_output
-			actionOutput.AddAction("Explored", currentNode, null);
+			actionOutput.AddAction("Explored", currentNode.GetPosition(), null);
 			#end
 			
 			// removed from if statement so i could time
@@ -293,7 +301,7 @@ class JPSO implements IPathfinder
 			// check to see if the current node has a forced neighbour, or is the end node
 			if (flag)// forced neighbour below
 			{
-				horizontalTimer.Stop();
+				//horizontalTimer.Stop();
 				return currentNode;
 			}
 			
@@ -305,13 +313,13 @@ class JPSO implements IPathfinder
 			currentNodeBelow = currentNodeBelowRight;
 			currentNodeBelowRight = map.GetNodeByIndex(currentX + dx_, y_ - 1);
 		}
-		horizontalTimer.Stop();
+		//horizontalTimer.Stop();
 		return null; // we hit the end of the map, either 0 or map.width
 	}
 	
 	function JumpVertical(x_:Int, y_:Int, dy_:Int, length_:Int, expanding_:Bool):Node
 	{
-		verticalTimer.Start();
+		//verticalTimer.Start();
 		//var endTile_:Int = x_ + (length_ * dx_);
 		/*
 		 * for now im going to make it simple and just have it search as far as possible
@@ -336,25 +344,25 @@ class JPSO implements IPathfinder
 			//check to see if current node is traversable
 			if (!currentNode.GetTraversable())
 			{
-				verticalTimer.Stop();
+				//verticalTimer.Stop();
 				// we hit a dead end
 				return null;
 			}
 			
 			#if action_output
-			actionOutput.AddAction("Explored", currentNode, null);
+			actionOutput.AddAction("Explored", currentNode.GetPosition(), null);
 			#end
 			
-			diagVertTimer.Start();
+			//diagVertTimer.Start();
 			var flag:Bool = (currentNode == endNode) ||
 			((currentY + dy_ >= 0 && currentY + dy_ < map.GetHeight()) &&
 			((rightInMap && (!currentNodeRight.GetTraversable() && currentNodeAboveRight.GetTraversable())) || // forced neighbour right
 			(leftInMap && (!currentNodeLeft.GetTraversable() && currentNodeAboveLeft.GetTraversable()))));
-			diagVertTimer.Stop();
+			//diagVertTimer.Stop();
 			// check to see if the current node has a forced neighbour
 			if (flag)// forced neighbour left
 			{
-				verticalTimer.Stop();
+				//verticalTimer.Stop();
 				return currentNode;
 			}
 			
@@ -366,7 +374,7 @@ class JPSO implements IPathfinder
 			currentNodeLeft = currentNodeAboveLeft;
 			currentNodeAboveLeft = map.GetNodeByIndex(x_ - 1, currentY + dy_);
 		}
-		verticalTimer.Stop();
+		//verticalTimer.Stop();
 		return null; // we hit the end of the map, either 0 or map.height
 	}
 	
@@ -398,7 +406,7 @@ class JPSO implements IPathfinder
 			}
 			
 			#if action_output
-			actionOutput.AddAction("Explored", currentNode, null);
+			actionOutput.AddAction("Explored", currentNode.GetPosition(), null);
 			#end
 			
 			//check horizontal + vertical directions
@@ -426,7 +434,7 @@ class JPSO implements IPathfinder
 		
 	}
 	
-	public function GetActionOutput():ActionOutput<Node>
+	public function GetActionOutput():ActionOutput
 	{
 		#if action_output
 		return actionOutput;

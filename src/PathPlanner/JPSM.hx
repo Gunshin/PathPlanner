@@ -11,7 +11,7 @@ import cs.Lib;
  * ...
  * @author Michael Stephens
  */
-class JPS implements IPathfinder 
+class JPSM implements IPathfinder 
 {
 	@:protected
 	var map:GraphGridMap;
@@ -54,7 +54,7 @@ class JPS implements IPathfinder
 		heuristicFunction = heuristicFunction_;
 	}
 	
-	public function FindPath(param_:PathplannerParameter):Array<Node>
+	public function FindPath(param_:PathplannerParameter):Array<Position>
 	{
 		/*verticalTimer.Reset();
 		horizontalTimer.Reset();
@@ -97,7 +97,7 @@ class JPS implements IPathfinder
 		// the start node is being treat as a jump point, so that its neighbours are added to the list
 		ExpandJumpPoint(startNode, open);
 		#if action_output
-		actionOutput.Expand(startNode);
+		actionOutput.AddAction("AddToOpen", startNode.GetPosition(), null);
 		#end
 		
 		while (!open.isEmpty())
@@ -119,7 +119,7 @@ class JPS implements IPathfinder
 				
 				reconstructTimer.Start();*/
 				//findTimer.Stop();
-				var path = PathUtility.ReconstructPath(endNode);
+				var path = PathUtility.ReconstructPathFromNodes(endNode);
 				/*reconstructTimer.Stop();
 				
 				trace("reconstruct: " + (reconstructTimer.GetCurrentTotalTime() * 1000000));*/
@@ -147,7 +147,7 @@ class JPS implements IPathfinder
 		DebugLogger.Assert(heuristicFunction != null, "JPS:Improve: heuristicFunction_ is null");
 		#end
 		#if action_output
-		actionOutput.Expand(currentNode_);
+		actionOutput.AddAction("Expand", currentNode_.GetPosition(), null);
 		#end
 		
 		//jumpTimer.Start();
@@ -187,7 +187,7 @@ class JPS implements IPathfinder
 					
 					// for now
 					#if cs
-					neighbours[i].heuristic = heuristicFunction_.Invoke(neighbours[i], endNode);
+					neighbours[i].heuristic = heuristicFunction.Invoke(neighbours[i].GetPosition(), endNode.GetPosition());
 					#else
 					neighbours[i].heuristic = heuristicFunction(neighbours[i].GetPosition(), endNode.GetPosition());
 					#end
@@ -197,8 +197,8 @@ class JPS implements IPathfinder
 					open_.enqueue(neighbours[i]);
 					
 					#if action_output
-					actionOutput.SetParent(neighbours[i], jumpPoint_);
-					actionOutput.AddToOpen(neighbours[i]);
+					actionOutput.AddAction("SetParent", neighbours[i].GetPosition(), jumpPoint_.GetPosition());
+					actionOutput.AddAction("AddToOpen", neighbours[i].GetPosition(), null);
 					#end
 				}
 			}
@@ -277,7 +277,7 @@ class JPS implements IPathfinder
 			{
 				currentNode.SetParent(map.GetNodeByIndex(currentX - dx_, y_));
 				#if action_output
-				actionOutput.SetParent(currentNode, map.GetNodeByIndex(currentX - dx_, y_));
+				actionOutput.AddAction("SetParent", currentNode.GetPosition(), map.GetNodeByIndex(currentX - dx_, y_).GetPosition());
 				#end
 				searchedMap.SetTraversableTrue(currentX, y_);
 				currentNode.SetPathCost(currentNode.GetParent().GetPathCost() + 1);
@@ -325,7 +325,7 @@ class JPS implements IPathfinder
 			{
 				currentNode.SetParent(map.GetNodeByIndex(x_, currentY - dy_));
 				#if action_output
-				actionOutput.SetParent(currentNode, map.GetNodeByIndex(x_, currentY - dy_));
+				actionOutput.AddAction("SetParent", currentNode.GetPosition(), map.GetNodeByIndex(x_, currentY - dy_).GetPosition());
 				#end
 				searchedMap.SetTraversableTrue(x_, currentY);
 				currentNode.SetPathCost(currentNode.GetParent().GetPathCost() + 1);
@@ -376,7 +376,7 @@ class JPS implements IPathfinder
 			
 			currentNode.SetParent(map.GetNodeByIndex(currentX - dx_, currentY - dy_));
 			#if action_output
-			actionOutput.SetParent(currentNode, map.GetNodeByIndex(currentX - dx_, currentY - dy_));
+			actionOutput.AddAction("SetParent", currentNode.GetPosition(), map.GetNodeByIndex(currentX - dx_, currentY - dy_).GetPosition());
 			#end
 			searchedMap.SetTraversableTrue(currentX, currentY);
 			currentNode.SetPathCost(currentNode.GetParent().GetPathCost() + 1.4);

@@ -3,14 +3,17 @@ package pathPlanner.test;
 import haxe.ds.Vector;
 import haxe.io.Eof;
 import haxe.io.Path;
+import haxe.macro.Expr.Position;
 import haxe.Timer;
 import pathPlanner.DebugRunningTimer;
 import pathPlanner.GraphGridMapMinimalist;
+import pathPlanner.JPSM;
 import pathPlanner.PathplannerParameter;
 
 import pathPlanner.IPathfinder;
 import pathPlanner.Node;
 import pathPlanner.test.Main.PathResult;
+import pathPlanner.Position;
 import sys.io.File;
 import sys.io.FileOutput;
 
@@ -37,7 +40,7 @@ class Main
 	public function new()
 	{
 		
-		var minMap:GraphGridMapMinimalist = new GraphGridMapMinimalist(32, 32, true);
+		/*var minMap:GraphGridMapMinimalist = new GraphGridMapMinimalist(32, 32, true);
 		minMap.SetTraversableFalse(7, 1);
 		minMap.SetTraversableFalse(4, 2);
 		minMap.SetTraversableFalse(5, 2);
@@ -65,7 +68,7 @@ class Main
 			finalJumpPosition = closestJumpPosition;
 		}
 		
-		trace(finalJumpPosition);
+		trace(finalJumpPosition);*/
 		
 		/*var num:haxe.Int32 = 0;
 		var s = Timer.stamp();
@@ -101,16 +104,26 @@ class Main
 		var map = LoadMap("resources/DragonAgeMaps/arena2.map");
 		var paths = LoadScenarios("resources/DragonAgeScenarios/arena2.map.scen", map, "	");
 		
-		/*var pathfinder:IPathfinder = new AStar(function(nodeOne, nodeTwo)
+		var pathfinder:IPathfinder = new AStar(function(nodeOne, nodeTwo)
 			{
 				return Math.sqrt(Math.pow(nodeOne.GetX() - nodeTwo.GetX(), 2) + Math.pow(nodeOne.GetY() - nodeTwo.GetY(), 2));
 			});
-		var jps:IPathfinder = new JPSPlus(map.GenerateGraphGridMapMinimalist(), function(nodeOne, nodeTwo)
+		var jpsp:IPathfinder = new JPSPlus(map.GenerateGraphGridMapMinimalist(), function(nodeOne, nodeTwo)
 			{
 				return Math.sqrt(Math.pow(nodeOne.GetX() - nodeTwo.GetX(), 2) + Math.pow(nodeOne.GetY() - nodeTwo.GetY(), 2));
-			});*/
+			});
+			//cast(jpsp, JPSPlus).AttachPrint(Print);
 		
-		var path:Int = 400;
+		var jpso:IPathfinder = new JPSO(map, function(nodeOne, nodeTwo)
+			{
+				return Math.sqrt(Math.pow(nodeOne.GetX() - nodeTwo.GetX(), 2) + Math.pow(nodeOne.GetY() - nodeTwo.GetY(), 2));
+			});
+		var jpsm:IPathfinder = new JPSM(map, function(nodeOne, nodeTwo)
+			{
+				return Math.sqrt(Math.pow(nodeOne.GetX() - nodeTwo.GetX(), 2) + Math.pow(nodeOne.GetY() - nodeTwo.GetY(), 2));
+			});
+			
+		var path:Int = 255;
 		
 		//var paths = GeneratePaths(map, 50);
 		/*var timerJPS = new DebugRunningTimer();
@@ -133,9 +146,19 @@ class Main
 		}*/
 
 		//trace("timerJPS took: " + (timerJPS.GetCurrentTotalTime() / 100000)/* + " timerAStar took: " + (timerAStar.GetCurrentTotalTime() / 1000)*/);
-		//trace("looking through: " + " _ " + paths[path].start.GetX() + "," + paths[path].start.GetY() + " t: " + paths[path].start.GetTraversable() + " _ " + paths[path].end.GetX() + "," + paths[path].end.GetY() + " t: " + paths[path].end.GetTraversable());
-		//ComparePath( GetPath(pathfinder, paths[path], map), GetPath(jps, paths[path], map) , 0.1);
+		/*trace("looking through: " + " _ " + paths[path].start.GetPosition().GetX() + "," + paths[path].start.GetPosition().GetY() + " t: " + paths[path].start.GetTraversable() + " _ " + paths[path].end.GetPosition().GetX() + "," + paths[path].end.GetPosition().GetY() + " t: " + paths[path].end.GetTraversable());
+		ComparePath( GetPath(pathfinder, paths[path], map), GetPath(jpso, paths[path], map) , 1);
+		ComparePath( GetPath(jpsm, paths[path], map), GetPath(jpsp, paths[path], map) , 1);*/
 		
+		var tests = [0, 128, 255, 379, 507, 627, 750];
+		
+		for (i in tests)
+		{
+			trace("A* path: " + i + " _ " + GetTime(1000, pathfinder, paths[i]));
+			trace("JPSO: " + i + " _ " + GetTime(1000, jpso, paths[i]));
+			trace("JPSM*: " + i + " _ " + GetTime(1000, jpsm, paths[i]));
+			trace("JPSP*: " + i + " _ " + GetTime(1000, jpsp, paths[i]));
+		}
 		/*var i = 0;
 		for (path in paths)
 		{
@@ -158,10 +181,34 @@ class Main
 		trace("path length of: " + pathStruct_.pathLength);
 	}*/
 	
+	public function GetTime(iterationCount_:Int, pathfinder_:IPathfinder, path_:Path):Float
+	{
+		var pathParam = new PathplannerParameter();
+		pathParam.startNode = path_.start;
+		pathParam.startX = path_.start.GetPosition().GetX();
+		pathParam.startY = path_.start.GetPosition().GetY();
+		pathParam.goalX = path_.end.GetPosition().GetX();
+		pathParam.goalY = path_.end.GetPosition().GetY();
+		pathParam.goalNode = path_.end;
+		
+		var timer = new DebugRunningTimer();
+		for (i in 0...iterationCount_)
+		{
+			timer.Start();
+			pathfinder_.FindPath(pathParam);
+			timer.Stop();
+		}
+		return timer.GetCurrentTotalTime() / iterationCount_ * 1000;
+	}
+	
 	public function GetPath(pathfinder_:IPathfinder, path_:Path, map_:GraphGridMap):PathResult
 	{
 		var pathParam = new PathplannerParameter();
 		pathParam.startNode = path_.start;
+		pathParam.startX = path_.start.GetPosition().GetX();
+		pathParam.startY = path_.start.GetPosition().GetY();
+		pathParam.goalX = path_.end.GetPosition().GetX();
+		pathParam.goalY = path_.end.GetPosition().GetY();
 		pathParam.goalNode = path_.end;
 		var timer = new DebugRunningTimer();
 		timer.Start();
@@ -173,6 +220,11 @@ class Main
 		//} );
 		timer.Stop();
 		
+		/*for (i in 0...100)
+		{
+			trace("_: " + pathfinder_.GetActionOutput().GetActionList()[i].actionType);
+		}*/
+		
 		var pathplannerName = Type.getClassName(Type.getClass(pathfinder_));
 		var actionOutput = pathfinder_.GetActionOutput();
 		DebugLogger.Assert(path != null, "The pathplanner: " + pathplannerName + " has produced a null path! action count: " + actionOutput.GetActionList().length);
@@ -180,10 +232,11 @@ class Main
 		var pathLength:Float = 0;
 		for (i in 0...path.length - 1)
 		{
+			//trace("path: " + i + " __ " + path[i].ToString());
 			pathLength += Math.sqrt(Math.pow(path[i].GetX() - path[i + 1].GetX(), 2) + Math.pow(path[i].GetY() - path[i + 1].GetY(), 2));
 		}
 		
-		return {pathplanner:pathfinder_, path: path, timeTaken: (timer.GetCurrentTotalTime() * 1000000), actionCount: actionOutput.GetActionList().length, pathLength: pathLength };
+		return {pathplanner:pathfinder_, path: path, timeTaken: (timer.GetCurrentTotalTime() * 1000), actionCount: actionOutput.GetActionList().length, pathLength: pathLength };
 	}
 	
 	public function ComparePath(pathOne_:PathResult, pathTwo_:PathResult, deviance_:Float)
@@ -207,7 +260,7 @@ class Main
 		trace("actionCount: " + pathTwo_.actionCount);
 		trace("node length: " + pathTwo_.path.length);
 		
-		DebugLogger.Assert(!((percent - 1) < -deviance_ || (percent - 1) > deviance_), "Deviance of " + pathplannerTwoName + " is too large: " + (percent - 1) + " against: +/-" + deviance_);
+		//DebugLogger.Assert(!((percent - 1) < -deviance_ || (percent - 1) > deviance_), "Deviance of " + pathplannerTwoName + " is too large: " + (percent - 1) + " against: +/-" + deviance_);
 	}
 	
 	public function LoadMap(filePath_:String):GraphGridMap
