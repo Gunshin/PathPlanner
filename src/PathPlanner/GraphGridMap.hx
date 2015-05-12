@@ -90,7 +90,7 @@ class GraphGridMap implements IGraphStructure
 	{
 		var neighbours:Array<DistanceNode> = neighbourHashTable.get(node_);
 		
-		var indexOfNeighbour = PathUtility.Contains(neighbours, neighbour_);
+		var indexOfNeighbour = PathUtility.ContainsNode(neighbours, neighbour_);
 		var success:Bool = false;
 		
 		if (indexOfNeighbour >= 0)
@@ -166,6 +166,11 @@ class GraphGridMap implements IGraphStructure
 		return null;
 	}
 	
+	/*
+	 * 
+	 * will return an array of size 8. some elements may be null if on edge of map.
+	 * 
+	 */
 	public function GetRawNeighbours(node_:Node):Array<Node>
 	{
 		var x:Int = node_.GetPosition().GetX();
@@ -187,28 +192,12 @@ class GraphGridMap implements IGraphStructure
 		return neighbours;
 	}
 	
+	
 	public function GetNodeByIndex(x_:Int, y_:Int):Node
 	{
 		//return map[x_ + y_ * width];
 		return x_ >= 0 && y_ >= 0 && x_ < width && y_ < height ? map[x_ + y_ * width] : null;
 	}
-	
-	/*
-	 * Only in use temporarily as i need to split the public interface for nodes from the pathplanner specific needs.
-	 */
-	/*public function ResetForPathplanning():Void
-	{
-		for (i in 0...width)
-		{
-			for (j in 0...height)
-			{
-				//map[i + j * width].SetParent(null);
-				//map[i + j * width].searched = false;
-				//map[i + j * width].SetPathCost(0);
-				//map[i + j * width].heuristic = 0;
-			}
-		}
-	}*/
 	
 	public function GenerateGraphGridMapMinimalist():GraphGridMapMinimalist
 	{

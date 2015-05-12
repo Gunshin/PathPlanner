@@ -58,7 +58,23 @@ class PathUtility
 		
 	}*/
 	
-	static public function Contains(array_:Array<DistanceNode>, node_:Node):Int
+	/*
+	 * returns the index of the node, otherwise if the node is not in the array, it returns -1
+	 */
+	static public function ContainsNodeHierarchical(array_:Array<NodeHierarchical>, node_:NodeHierarchical):Int
+	{
+		for (i in 0...array_.length)
+		{
+			if (node_ == array_[i])
+			{
+				return i;
+			}
+		}
+		
+		return -1;
+	}
+	
+	static public function ContainsNode(array_:Array<DistanceNode>, node_:Node):Int
 	{
 		for (i in 0...array_.length)
 		{

@@ -1,37 +1,16 @@
-correct node implementation
 
-JPS:
-need to improve heuristic based on direction we are expanding so that nodes expanding in the correct direction will be expanded first.
 
 GraphGridMapMinimalist:
 decide on full implementation. currently does not inherit from IGraphStructure
 
-original running time release:
-	3.681081611e-005
-
 need to change forced neighbour checks to behind rather than current in front
 
-open list:
-	minimalist_node
+GraphHierarchical :
+	does not take into account any non-traversable nodes. Will have a problem with non-static maps right now
+	- generate hierarchy does not take into account graph deconstruction first
 
-graphs:
-	searched - GraphGridMapMinimalist
-	parent - xy
-	traversable - GraphGridMapMinimalist
-	pathcost - float
-	g - float
 
-xy:
-	x - float
-	y - float
-
-minimalist_node:
-	position
-	priority
-
-	xy
-
-	
+DistanceNode needs changing to NodeDistance
 	
 Notes
 

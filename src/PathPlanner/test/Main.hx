@@ -7,6 +7,7 @@ import haxe.macro.Expr.Position;
 import haxe.Timer;
 import pathPlanner.DebugRunningTimer;
 import pathPlanner.GraphGridMapMinimalist;
+import pathPlanner.GraphHierarchical;
 import pathPlanner.JPSM;
 import pathPlanner.PathplannerParameter;
 
@@ -39,6 +40,29 @@ class Main
 	
 	public function new()
 	{
+		
+		var graph:GraphGridMap = new GraphGridMap(16, 16);
+		var hier:GraphHierarchical = new GraphHierarchical();
+		hier.GenerateFromGridGraph(graph);
+		hier.GenerateHierarchy(4);
+		
+		//trace(hier.GetLevelHierarchy(0).length);
+		//trace(hier.GetLevelHierarchy(1).length);
+		//trace(hier.GetLevelHierarchy(2).length);
+		for (node in hier.GetLevelHierarchy(1))
+		{
+			trace(node.GetPosition().ToString() + " ___ " + node.GetNeighbours().length);
+		}
+		
+		for (node in hier.GetLevelHierarchy(4))
+		{
+			trace(node.GetPosition().ToString() + " _____ " + NodeHierarchical.GetAveragePosition(node.GetHierarchicalChildren()).ToString());
+			for (child in node.GetHierarchicalChildren())
+			{
+				trace(child.GetPosition().ToString());
+			}
+		}
+		
 		
 		/*var minMap:GraphGridMapMinimalist = new GraphGridMapMinimalist(32, 32, true);
 		minMap.SetTraversableFalse(7, 1);
@@ -101,7 +125,7 @@ class Main
 		//DebugLogger.GetInstance().SetLoggingFunction(Print);
 		#end
 		
-		var map = LoadMap("resources/DragonAgeMaps/arena2.map");
+		/*var map = LoadMap("resources/DragonAgeMaps/arena2.map");
 		var paths = LoadScenarios("resources/DragonAgeScenarios/arena2.map.scen", map, "	");
 		
 		var pathfinder:IPathfinder = new AStar(function(nodeOne, nodeTwo)
@@ -123,7 +147,7 @@ class Main
 				return Math.sqrt(Math.pow(nodeOne.GetX() - nodeTwo.GetX(), 2) + Math.pow(nodeOne.GetY() - nodeTwo.GetY(), 2));
 			});
 			
-		var path:Int = 255;
+		var path:Int = 255;*/
 		
 		//var paths = GeneratePaths(map, 50);
 		/*var timerJPS = new DebugRunningTimer();
@@ -150,7 +174,7 @@ class Main
 		ComparePath( GetPath(pathfinder, paths[path], map), GetPath(jpso, paths[path], map) , 1);
 		ComparePath( GetPath(jpsm, paths[path], map), GetPath(jpsp, paths[path], map) , 1);*/
 		
-		var tests = [0, 128, 255, 379, 507, 627, 750];
+		/*var tests = [0, 128, 255, 379, 507, 627, 750];
 		
 		for (i in tests)
 		{
@@ -158,7 +182,7 @@ class Main
 			trace("JPSO: " + i + " _ " + GetTime(1000, jpso, paths[i]));
 			trace("JPSM*: " + i + " _ " + GetTime(1000, jpsm, paths[i]));
 			trace("JPSP*: " + i + " _ " + GetTime(1000, jpsp, paths[i]));
-		}
+		}*/
 		/*var i = 0;
 		for (path in paths)
 		{

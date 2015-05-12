@@ -70,6 +70,11 @@ extends HashableItem
 		return positionOfNode;
 	}
 	
+	public function SetPosition(position_:Position):Void
+	{
+		positionOfNode = position_;
+	}
+	
 	public function GetTraversable():Bool
 	{
 		return traversable;
