@@ -3,7 +3,8 @@
 GraphGridMapMinimalist:
 decide on full implementation. currently does not inherit from IGraphStructure
 
-need to change forced neighbour checks to behind rather than current in front
+JPS:
+	needs changing so that the start up time is better. currently attempts to regenerate the maps on every run.
 
 GraphHierarchical :
 	does not take into account any non-traversable nodes. Will have a problem with non-static maps right now

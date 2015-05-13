@@ -10,6 +10,8 @@ class GraphHierarchical
 {
 	
 	var hierarchyLists:Array<Array<NodeHierarchical>> = new Array<Array<NodeHierarchical>>(); // this is the container of all hierarchical nodes in the generated map
+	
+	var nodeEquivalentTable:HashTable <Node, NodeHierarchical>;
 
 	public function new() 
 	{
@@ -23,7 +25,7 @@ class GraphHierarchical
 		
 		// we are using this hash table to store a reference between the old normal node from the GraphGridMap, with the corresponding new NodeHierarchical
 		// useful for setting up neighbours
-		var neighbourHashTable:HashTable <Node, NodeHierarchical> = new HashTable <Node, NodeHierarchical>(4, gridGraph_.GetWidth() * gridGraph_.GetHeight());
+		nodeEquivalentTable = new HashTable <Node, NodeHierarchical>(4, gridGraph_.GetWidth() * gridGraph_.GetHeight());
 		
 		// first we create and add all new nodehierarchicals
 		for (i in 0...gridGraph_.GetHeight())
@@ -45,7 +47,7 @@ class GraphHierarchical
 				hierarchyLists[0].push(hierNode);
 				
 				// add to the hashmap
-				neighbourHashTable.set(node, hierNode);
+				nodeEquivalentTable.set(node, hierNode);
 			}
 			
 		}
@@ -64,7 +66,7 @@ class GraphHierarchical
 					continue;
 				}
 				
-				var currentHierNode:NodeHierarchical = neighbourHashTable.get(node);
+				var currentHierNode:NodeHierarchical = nodeEquivalentTable.get(node);
 				
 				// grab the neighbours and add them
 				var neighbours:Array<Node> = gridGraph_.GetRawNeighbours(node);
@@ -81,7 +83,7 @@ class GraphHierarchical
 					{
 						
 						// guaranteed to not be null since every traversable node was added to the hash table
-						var neighbourHierNode:NodeHierarchical = neighbourHashTable.get(neighbour);
+						var neighbourHierNode:NodeHierarchical = nodeEquivalentTable.get(neighbour);
 						
 						currentHierNode.AddNeighbour(neighbourHierNode);
 						
@@ -109,6 +111,8 @@ class GraphHierarchical
 		
 		for (i in 0...levelCount_)
 		{
+			
+			trace("Building level: " + i);
 			
 			var hierarchyCopy:Array<NodeHierarchical> = hierarchyLists[i].copy();
 			hierarchyLists[i + 1] = new Array<NodeHierarchical>();
@@ -158,6 +162,57 @@ class GraphHierarchical
 		
 		return hierarchyLists[level_];
 		
+	}
+	
+	public function GetParentAtLevel(child_:NodeHierarchical, level_:Int):NodeHierarchical
+	{
+		
+		if (child_ == null || child_.GetLevel() >= level_ || level_ < 0)
+		{
+			return null;
+		}
+		
+		var current:NodeHierarchical = child_;
+		
+		while (current.GetLevel() < level_)
+		{
+			current = current.GetHierarchicalParent();
+		}
+		
+		return current;
+	}
+	
+	public function GetCommonParentNode(nodeA_:NodeHierarchical, nodeB_:NodeHierarchical):NodeHierarchical
+	{
+		
+		var currentA:NodeHierarchical = nodeA_;
+		var currentB:NodeHierarchical = nodeB_;
+		
+		// lets make sure both nodes are definitely on the same level
+		if (currentA.GetLevel() < currentB.GetLevel())
+		{
+			currentA = GetParentAtLevel(currentA, currentB.GetLevel());
+		}
+		else if (currentB.GetLevel() < currentA.GetLevel())
+		{
+			currentB = GetParentAtLevel(currentB, currentA.GetLevel());
+		}
+		
+		while (currentA != currentB && currentA.GetLevel() < hierarchyLists.length && currentA != null && currentB != null )
+		{
+			currentA = currentA.GetHierarchicalParent();
+			currentB = currentB.GetHierarchicalParent();
+			
+			trace(currentA.GetLevel() + ": " + currentA.GetPosition().ToString() + " ____ " + currentB.GetLevel() + ": " + currentB.GetPosition().ToString());
+		}
+		
+		return currentA;
+		
+	}
+	
+	public function GetHierarchicalEquivalent(node_:Node):NodeHierarchical
+	{
+		return nodeEquivalentTable.get(node_);
 	}
 	
 }

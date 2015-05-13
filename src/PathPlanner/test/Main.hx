@@ -41,27 +41,33 @@ class Main
 	public function new()
 	{
 		
-		var graph:GraphGridMap = new GraphGridMap(16, 16);
+		var memoryInit:Vector<Int> = new Vector<Int>(1000000);
+		for (i in 0...1000000)
+		{
+			memoryInit[i] = 10;
+		}
+		memoryInit = null;
+		
+		trace("memory init done");
+		
+		var graph:GraphGridMap = new GraphGridMap(64, 64);
 		var hier:GraphHierarchical = new GraphHierarchical();
 		hier.GenerateFromGridGraph(graph);
-		hier.GenerateHierarchy(4);
+		hier.GenerateHierarchy(8);
 		
-		//trace(hier.GetLevelHierarchy(0).length);
-		//trace(hier.GetLevelHierarchy(1).length);
-		//trace(hier.GetLevelHierarchy(2).length);
-		for (node in hier.GetLevelHierarchy(1))
+		/*for (node in hier.GetLevelHierarchy(1))
 		{
 			trace(node.GetPosition().ToString() + " ___ " + node.GetNeighbours().length);
-		}
+		}*/
 		
-		for (node in hier.GetLevelHierarchy(4))
+		/*for (node in hier.GetLevelHierarchy(4))
 		{
 			trace(node.GetPosition().ToString() + " _____ " + NodeHierarchical.GetAveragePosition(node.GetHierarchicalChildren()).ToString());
 			for (child in node.GetHierarchicalChildren())
 			{
 				trace(child.GetPosition().ToString());
 			}
-		}
+		}*/
 		
 		
 		/*var minMap:GraphGridMapMinimalist = new GraphGridMapMinimalist(32, 32, true);
