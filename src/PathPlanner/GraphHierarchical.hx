@@ -20,7 +20,6 @@ class GraphHierarchical
 	
 	public function GenerateFromGridGraph(gridGraph_:GraphGridMap):Void
 	{
-		
 		hierarchyLists[0] = new Array<NodeHierarchical>();
 		
 		// we are using this hash table to store a reference between the old normal node from the GraphGridMap, with the corresponding new NodeHierarchical
@@ -94,7 +93,7 @@ class GraphHierarchical
 			}
 			
 		}
-		
+			
 	}
 	
 	/*
@@ -155,6 +154,13 @@ class GraphHierarchical
 			}
 			
 		}
+	}
+	
+	function GenerateParent(childSource_:NodeHierarchical, nonParentedNodeList_:Array<NodeHierarchical>)
+	{
+		
+		
+		
 	}
 	
 	public function GetLevelHierarchy(level_:Int):Array<NodeHierarchical>

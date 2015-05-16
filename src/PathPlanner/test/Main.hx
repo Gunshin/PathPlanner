@@ -50,7 +50,7 @@ class Main
 		
 		trace("memory init done");
 		
-		var graph:GraphGridMap = new GraphGridMap(64, 64);
+		var graph:GraphGridMap = new GraphGridMap(256, 256);
 		var hier:GraphHierarchical = new GraphHierarchical();
 		hier.GenerateFromGridGraph(graph);
 		hier.GenerateHierarchy(8);
