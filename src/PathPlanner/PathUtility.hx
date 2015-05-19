@@ -22,7 +22,20 @@ class PathUtility
 		}
 		path.reverse();
 		return path;
+	}
+	
+	static inline public function ReconstructNodePathFromNodes(endNode_:Node):Array<Node>
+	{
+		var path:Array<Node> = new Array<Node>();
+		var currentNode_:Node = endNode_;
 		
+		while (currentNode_ != null)
+		{
+			path.push(currentNode_);
+			currentNode_ = currentNode_.GetParent();
+		}
+		path.reverse();
+		return path;
 	}
 	
 	static inline public function ReconstructPathFromPositionMap(endPosition_:Position, positionMap_:Array<Position>, positionMapWidth_:Int):Array<Position>
@@ -39,7 +52,6 @@ class PathUtility
 		}
 		path.reverse();
 		return path;
-		
 	}
 	
 	/*static public function Insert(array_:Array<Node>, node_:Node)

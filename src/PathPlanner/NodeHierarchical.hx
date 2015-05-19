@@ -159,6 +159,13 @@ class NodeHierarchical extends Node
 		return level;
 	}
 	
+	public function GetConnectionChildlen(neighbour_:NodeHierarchical):Array<NodeHierarchical>
+	{
+		
+		return neighbourChildConnections.get(neighbour_);
+		
+	}
+	
 	public static function GetAveragePosition(nodes_:Array<NodeHierarchical>):Position
 	{
 		var x:Int = 0;

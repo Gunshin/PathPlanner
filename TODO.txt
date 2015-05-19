@@ -10,7 +10,10 @@ GraphHierarchical :
 	does not take into account any non-traversable nodes. Will have a problem with non-static maps right now
 	- generate hierarchy does not take into account graph deconstruction first
 
-
+HPAStart:
+	only does 1st layer
+	
+	
 DistanceNode needs changing to NodeDistance
 	
 Notes

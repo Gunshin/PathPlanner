@@ -8,6 +8,7 @@ import haxe.Timer;
 import pathPlanner.DebugRunningTimer;
 import pathPlanner.GraphGridMapMinimalist;
 import pathPlanner.GraphHierarchical;
+import pathPlanner.HPAStar;
 import pathPlanner.JPSM;
 import pathPlanner.PathplannerParameter;
 
@@ -54,6 +55,22 @@ class Main
 		var hier:GraphHierarchical = new GraphHierarchical();
 		hier.GenerateFromGridGraph(graph);
 		hier.GenerateHierarchy(8);
+		
+		var hpa:HPAStar = new HPAStar(function(nodeOne, nodeTwo)
+			{
+				return Math.sqrt(Math.pow(nodeOne.GetX() - nodeTwo.GetX(), 2) + Math.pow(nodeOne.GetY() - nodeTwo.GetY(), 2));
+			},
+			hier);
+			
+		var param:PathplannerParameter = new PathplannerParameter();
+		param.startNode = graph.GetNodeByIndex(0, 0);
+		param.goalNode = graph.GetNodeByIndex(200, 200);
+		
+		var pos:Array<Position> = hpa.FindPath(param);
+		for (p in pos)
+		{
+			trace(p.ToString());
+		}
 		
 		/*for (node in hier.GetLevelHierarchy(1))
 		{
