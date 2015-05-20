@@ -229,6 +229,32 @@ class GraphHierarchical
 		
 	}
 	
+	/*
+	 * This function returns all concrete nodes that share the specified ancestor.
+	 */
+	public function GetAllNodesInConcreteLayerFromAncestor(ancestor_:NodeHierarchical):Array<NodeHierarchical>
+	{
+		var nodes:Array<NodeHierarchical> = new Array<NodeHierarchical>();
+		RecursiveAddNodes(ancestor_, nodes);
+		return nodes;
+	}
+	
+	function RecursiveAddNodes(currentNode_:NodeHierarchical, array_:Array<NodeHierarchical>):Void
+	{
+		//could do this check based on the current level of the node, but either work
+		if (currentNode_.GetHierarchicalChildren().length > 0)
+		{
+			for (child in currentNode_.GetHierarchicalChildren())
+			{
+				RecursiveAddNodes(child, array_);
+			}
+		}
+		else // we are the concrete node.
+		{
+			array_.push(currentNode_);
+		}
+	}
+	
 	public function GetHierarchicalEquivalent(node_:Node):NodeHierarchical
 	{
 		return nodeEquivalentTable.get(node_);

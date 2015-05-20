@@ -66,17 +66,17 @@ class HPAStar implements IPathfinder
 		}
 		
 		var hierNodePath:Array<Node> = AStarPath(startParent, endParent); // lets find a general path
+		#if action_output // simple way to record the path
+		for (i in 0...hierNodePath.length - 1)
+		{
+			actionOutput.AddAction("AbstractionPath:1", hierNodePath[i].GetPosition(), hierNodePath[i + 1].GetPosition());
+		}
+		#end
 		
 		if (hierNodePath == null)// if this path is null, we need to catch it. can happen.
 		{
 			trace("returned null");
 			return null;
-		}
-		
-		trace("found abstract path: " + hierNodePath.length);
-		for (node in hierNodePath)
-		{
-			trace(node.GetPosition().ToString());
 		}
 		
 		var hierHierPath:Array<NodeHierarchical> = CastToNodeHierarchical(hierNodePath);
@@ -96,6 +96,8 @@ class HPAStar implements IPathfinder
 			var concreteTargets:Array<NodeHierarchical> = hierHierPath[i + 1].GetConnectionChildren(hierHierPath[i]); //get connections to current node
 			
 			var localPath:Array<Node> = AStarPath(currentConcreteNode, concreteTargets[0]); // get path to first node
+			
+			
 			
 			if (localPath == null) // just incase no local path can be found (i think its impossible to be the case)
 			{
