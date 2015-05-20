@@ -103,7 +103,7 @@ class GraphHierarchical
 	 * can therefor have any number of child nodes between 1 and 9.
 	 * 
 	 */
-	public function GenerateHierarchy(levelCount_:Int)
+	public function GenerateHierarchy(levelCount_:Int, nodeNeighbourDepth_:Int)
 	{
 		
 		// lets guarantee that the non-concrete layers all are removed
@@ -125,6 +125,8 @@ class GraphHierarchical
 				
 				var hierNodeParent:NodeHierarchical = new NodeHierarchical(i + 1);// level above
 				hierarchyLists[i + 1].push(hierNodeParent);
+				
+				//PopulateParent(hierNode, hierNodeParent, hierarchyCopy, nodeNeighbourDepth_);
 				
 				//set the node we currently have to be a child of the new parent
 				hierNode.AddHierarchicalParent(hierNodeParent);
@@ -156,11 +158,22 @@ class GraphHierarchical
 		}
 	}
 	
-	function GenerateParent(childSource_:NodeHierarchical, nonParentedNodeList_:Array<NodeHierarchical>)
+	function PopulateParent(childSource_:NodeHierarchical, parent_:NodeHierarchical, nonParentedNodeList_:Array<NodeHierarchical>, maxDepth_:Int, currentDepth_:Int = 0)
 	{
-		
-		
-		
+		if (nonParentedNodeList_.remove(childSource_)) // this neighbour was succesfully removed from the list meaing it had no parent
+		{
+			parent_.AddHierarchicalChild(childSource_);
+			childSource_.AddHierarchicalParent(parent_);
+			
+			if (currentDepth_ < maxDepth_)
+			{
+				for (neighbour in childSource_.GetNeighbours())
+				{
+					var hierNode:NodeHierarchical = cast(neighbour.connectedNode, NodeHierarchical);
+					PopulateParent(hierNode, parent_, nonParentedNodeList_, maxDepth_, currentDepth_ + 1); // recurse
+				}
+			}
+		}
 	}
 	
 	public function GetLevelHierarchy(level_:Int):Array<NodeHierarchical>

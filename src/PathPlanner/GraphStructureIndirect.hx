@@ -24,7 +24,7 @@ class GraphStructureIndirect implements IGraphStructure
 	
 	public function AddNeighbour(node_:Node, newNeighbour_:Node, ?distance_:Float):Void
 	{
-		if (PathUtility.ContainsNode(neighbours, newNeighbour_) != -1)
+		if (PathUtility.ContainsNode(neighbours, newNeighbour_) != -1 || newNeighbour_ == null)
 		{
 			return;
 		}

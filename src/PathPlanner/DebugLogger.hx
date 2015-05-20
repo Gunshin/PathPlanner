@@ -32,12 +32,14 @@ class DebugLogger
 		#end
 	}*/
 	
-	public static function Assert(flag_:Bool, message_:String)
+	public static inline function Assert(flag_:Bool, message_:String)
 	{
+		#if debugging
 		if (!flag_)
 		{
 			throw message_;
 		}
+		#end
 	}
 	
 	/*#if cs

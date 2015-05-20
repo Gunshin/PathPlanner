@@ -54,9 +54,11 @@ class Main
 		var graph:GraphGridMap = new GraphGridMap(256, 256);
 		var hier:GraphHierarchical = new GraphHierarchical();
 		hier.GenerateFromGridGraph(graph);
-		hier.GenerateHierarchy(8);
+		hier.GenerateHierarchy(8, 1);
 		
-		var hpa:HPAStar = new HPAStar(function(nodeOne, nodeTwo)
+		trace(hier.GetLevelHierarchy(1)[0].GetHierarchicalChildren().length);
+		
+		/*var hpa:HPAStar = new HPAStar(function(nodeOne, nodeTwo)
 			{
 				return Math.sqrt(Math.pow(nodeOne.GetX() - nodeTwo.GetX(), 2) + Math.pow(nodeOne.GetY() - nodeTwo.GetY(), 2));
 			},
@@ -70,7 +72,7 @@ class Main
 		for (p in pos)
 		{
 			trace(p.ToString());
-		}
+		}*/
 		
 		/*for (node in hier.GetLevelHierarchy(1))
 		{
@@ -148,14 +150,14 @@ class Main
 		//DebugLogger.GetInstance().SetLoggingFunction(Print);
 		#end
 		
-		/*var map = LoadMap("resources/DragonAgeMaps/arena2.map");
+		var map = LoadMap("resources/DragonAgeMaps/arena2.map");
 		var paths = LoadScenarios("resources/DragonAgeScenarios/arena2.map.scen", map, "	");
 		
 		var pathfinder:IPathfinder = new AStar(function(nodeOne, nodeTwo)
 			{
 				return Math.sqrt(Math.pow(nodeOne.GetX() - nodeTwo.GetX(), 2) + Math.pow(nodeOne.GetY() - nodeTwo.GetY(), 2));
 			});
-		var jpsp:IPathfinder = new JPSPlus(map.GenerateGraphGridMapMinimalist(), function(nodeOne, nodeTwo)
+		/*var jpsp:IPathfinder = new JPSPlus(map.GenerateGraphGridMapMinimalist(), function(nodeOne, nodeTwo)
 			{
 				return Math.sqrt(Math.pow(nodeOne.GetX() - nodeTwo.GetX(), 2) + Math.pow(nodeOne.GetY() - nodeTwo.GetY(), 2));
 			});
@@ -197,15 +199,16 @@ class Main
 		ComparePath( GetPath(pathfinder, paths[path], map), GetPath(jpso, paths[path], map) , 1);
 		ComparePath( GetPath(jpsm, paths[path], map), GetPath(jpsp, paths[path], map) , 1);*/
 		
-		/*var tests = [0, 128, 255, 379, 507, 627, 750];
+		var tests = [0, 128, 255, 379, 507, 627, 750];
 		
 		for (i in tests)
 		{
 			trace("A* path: " + i + " _ " + GetTime(1000, pathfinder, paths[i]));
-			trace("JPSO: " + i + " _ " + GetTime(1000, jpso, paths[i]));
-			trace("JPSM*: " + i + " _ " + GetTime(1000, jpsm, paths[i]));
-			trace("JPSP*: " + i + " _ " + GetTime(1000, jpsp, paths[i]));
-		}*/
+			trace("HPA* path: " + i + " _ " + GetTime(1000, pathfinder, paths[i]));
+			//trace("JPSO: " + i + " _ " + GetTime(1000, jpso, paths[i]));
+			//trace("JPSM*: " + i + " _ " + GetTime(1000, jpsm, paths[i]));
+			//trace("JPSP*: " + i + " _ " + GetTime(1000, jpsp, paths[i]));
+		}
 		/*var i = 0;
 		for (path in paths)
 		{

@@ -97,14 +97,15 @@ class NodeHierarchical extends Node
 		
 		for (child in hierarchicalChildren)
 		{
-			
+			DebugLogger.Assert(child != null, "child is null");
 			// this is the base class method, but since we are using hierarchical nodes, we can guarantee they are all hierarchical nodes aswell
 			var childNeighbours:Array<DistanceNode> = child.GetNeighbours(); 
 			
 			for (neighbour in childNeighbours)
 			{
-				
+				DebugLogger.Assert(neighbour.connectedNode != null, "connectedNode is null");
 				var nodeHier:NodeHierarchical = cast(neighbour.connectedNode, NodeHierarchical);
+				DebugLogger.Assert(nodeHier != null, "casted node is null");
 				
 				// if the parent of the childs neighbour is not us, that means we have a border connection
 				if (nodeHier.GetHierarchicalParent() != this)
@@ -159,7 +160,7 @@ class NodeHierarchical extends Node
 		return level;
 	}
 	
-	public function GetConnectionChildlen(neighbour_:NodeHierarchical):Array<NodeHierarchical>
+	public function GetConnectionChildren(neighbour_:NodeHierarchical):Array<NodeHierarchical>
 	{
 		
 		return neighbourChildConnections.get(neighbour_);

@@ -93,7 +93,7 @@ class HPAStar implements IPathfinder
 			// what we want to do is find a path from the child in our current node, to the neighbour connector of the next in the path to our node.
 			// eg. find which child node of our neighbour connects to us, and find a path to it. continue until done.
 			
-			var concreteTargets:Array<NodeHierarchical> = hierHierPath[i + 1].GetConnectionChildlen(hierHierPath[i]); //get connections to current node
+			var concreteTargets:Array<NodeHierarchical> = hierHierPath[i + 1].GetConnectionChildren(hierHierPath[i]); //get connections to current node
 			
 			var localPath:Array<Node> = AStarPath(currentConcreteNode, concreteTargets[0]); // get path to first node
 			
