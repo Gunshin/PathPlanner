@@ -51,28 +51,18 @@ class Main
 		
 		trace("memory init done");
 		
-		var graph:GraphGridMap = new GraphGridMap(256, 256);
+		/*var graph:GraphGridMap = new GraphGridMap(256, 256);
 		var hier:GraphHierarchical = new GraphHierarchical();
 		hier.GenerateFromGridGraph(graph);
 		hier.GenerateHierarchy(8, 1);
 		
 		trace(hier.GetLevelHierarchy(1)[0].GetHierarchicalChildren().length);
 		
-		/*var hpa:HPAStar = new HPAStar(function(nodeOne, nodeTwo)
+		var hpa:HPAStar = new HPAStar(function(nodeOne, nodeTwo)
 			{
 				return Math.sqrt(Math.pow(nodeOne.GetX() - nodeTwo.GetX(), 2) + Math.pow(nodeOne.GetY() - nodeTwo.GetY(), 2));
 			},
-			hier);
-			
-		var param:PathplannerParameter = new PathplannerParameter();
-		param.startNode = graph.GetNodeByIndex(0, 0);
-		param.goalNode = graph.GetNodeByIndex(200, 200);
-		
-		var pos:Array<Position> = hpa.FindPath(param);
-		for (p in pos)
-		{
-			trace(p.ToString());
-		}*/
+			hier);*/
 		
 		/*for (node in hier.GetLevelHierarchy(1))
 		{
@@ -153,11 +143,20 @@ class Main
 		var map = LoadMap("resources/DragonAgeMaps/arena2.map");
 		var paths = LoadScenarios("resources/DragonAgeScenarios/arena2.map.scen", map, "	");
 		
+		var hier:GraphHierarchical = new GraphHierarchical();
+		hier.GenerateFromGridGraph(map);
+		hier.GenerateHierarchy(8, 1);
+		
 		var pathfinder:IPathfinder = new AStar(function(nodeOne, nodeTwo)
 			{
 				return Math.sqrt(Math.pow(nodeOne.GetX() - nodeTwo.GetX(), 2) + Math.pow(nodeOne.GetY() - nodeTwo.GetY(), 2));
 			});
-		/*var jpsp:IPathfinder = new JPSPlus(map.GenerateGraphGridMapMinimalist(), function(nodeOne, nodeTwo)
+		var hpa:HPAStar = new HPAStar(function(nodeOne, nodeTwo)
+			{
+				return Math.sqrt(Math.pow(nodeOne.GetX() - nodeTwo.GetX(), 2) + Math.pow(nodeOne.GetY() - nodeTwo.GetY(), 2));
+			},
+			hier);
+		var jpsp:IPathfinder = new JPSPlus(map.GenerateGraphGridMapMinimalist(), function(nodeOne, nodeTwo)
 			{
 				return Math.sqrt(Math.pow(nodeOne.GetX() - nodeTwo.GetX(), 2) + Math.pow(nodeOne.GetY() - nodeTwo.GetY(), 2));
 			});
@@ -172,7 +171,7 @@ class Main
 				return Math.sqrt(Math.pow(nodeOne.GetX() - nodeTwo.GetX(), 2) + Math.pow(nodeOne.GetY() - nodeTwo.GetY(), 2));
 			});
 			
-		var path:Int = 255;*/
+		//var path:Int = 255;
 		
 		//var paths = GeneratePaths(map, 50);
 		/*var timerJPS = new DebugRunningTimer();
@@ -204,10 +203,10 @@ class Main
 		for (i in tests)
 		{
 			trace("A* path: " + i + " _ " + GetTime(1000, pathfinder, paths[i]));
-			trace("HPA* path: " + i + " _ " + GetTime(1000, pathfinder, paths[i]));
-			//trace("JPSO: " + i + " _ " + GetTime(1000, jpso, paths[i]));
-			//trace("JPSM*: " + i + " _ " + GetTime(1000, jpsm, paths[i]));
-			//trace("JPSP*: " + i + " _ " + GetTime(1000, jpsp, paths[i]));
+			trace("HPA* path: " + i + " _ " + GetTime(1000, hpa, paths[i]));
+			trace("JPSO: " + i + " _ " + GetTime(1000, jpso, paths[i]));
+			trace("JPSM*: " + i + " _ " + GetTime(1000, jpsm, paths[i]));
+			trace("JPSP*: " + i + " _ " + GetTime(1000, jpsp, paths[i]));
 		}
 		/*var i = 0;
 		for (path in paths)
@@ -248,6 +247,16 @@ class Main
 			pathfinder_.FindPath(pathParam);
 			timer.Stop();
 		}
+		
+		/*var path:Array<Position> = pathfinder_.FindPath(pathParam);
+		var pathLength:Float = 0;
+		for (i in 0...path.length - 1)
+		{
+			//trace("path: " + i + " __ " + path[i].ToString());
+			pathLength += Math.sqrt(Math.pow(path[i].GetX() - path[i + 1].GetX(), 2) + Math.pow(path[i].GetY() - path[i + 1].GetY(), 2));
+		}
+		trace("path length: " + pathLength);*/
+		
 		return timer.GetCurrentTotalTime() / iterationCount_ * 1000;
 	}
 	
