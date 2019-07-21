@@ -1,7 +1,7 @@
 package pathPlanner;
 
-import de.polygonal.ds.Prioritizable;
-import de.polygonal.ds.PriorityQueue;
+import polygonal.ds.Prioritizable;
+import polygonal.ds.PriorityQueue;
 
 #if cs
 import cs.Lib;
@@ -129,7 +129,7 @@ class JPSPlus implements IPathfinder
 		
 		searchedMap.SetTraversableTrue(startCoord.GetX(), startCoord.GetY()); // if we dont do this, the algorithm attempts to search the start node again which results in a cyclic reference
 		
-		var open:PriorityQueue<PositionWrapper> = new PriorityQueue<PositionWrapper>(true, 128);
+		var open:PriorityQueue<PositionWrapper> = new PriorityQueue<PositionWrapper>(128, true);
 		
 		// the start node is being treat as a jump point, so that its neighbours are added to the list
 		open.enqueue(new PositionWrapper(0, startCoord));

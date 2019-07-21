@@ -1,6 +1,6 @@
 package pathPlanner;
 
-import de.polygonal.ds.PriorityQueue;
+import polygonal.ds.PriorityQueue;
 import haxe.ds.Vector;
 
 #if cs
@@ -96,7 +96,7 @@ class JPSO implements IPathfinder
 		// if we dont do this, the algorithm attempts to search the start node again which results in a cyclic reference
 		searchedMap.SetTraversableTrue(startNode.GetPosition().GetX(), startNode.GetPosition().GetY());
 		
-		var open:PriorityQueue<Node> = new PriorityQueue<Node>(true, 128);
+		var open:PriorityQueue<Node> = new PriorityQueue<Node>(128, true);
 		
 		open.enqueue(startNode);
 		#if action_output

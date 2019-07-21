@@ -1,6 +1,6 @@
 package pathPlanner;
 
-import de.polygonal.ds.HashTable;
+import polygonal.ds.HashTable;
 
 /**
  * ...

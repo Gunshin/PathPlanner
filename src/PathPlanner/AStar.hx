@@ -1,6 +1,6 @@
 package pathPlanner;
 
-import de.polygonal.ds.PriorityQueue;
+import polygonal.ds.PriorityQueue;
 
 #if cs
 import cs.Lib;
@@ -49,8 +49,8 @@ class AStar implements IPathfinder
 		
 		param_.startNode.SetParent(null);
 		
-		var open:PriorityQueue<Node> = new PriorityQueue<Node>(true, 128);
-		var closed:PriorityQueue<Node> = new PriorityQueue<Node>(true, 128);
+		var open:PriorityQueue<Node> = new PriorityQueue<Node>(128, true);
+		var closed:PriorityQueue<Node> = new PriorityQueue<Node>(128, true);
 		
 		open.enqueue(param_.startNode);
 		#if action_output

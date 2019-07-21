@@ -1,6 +1,6 @@
 package pathPlanner;
 
-import de.polygonal.ds.PriorityQueue;
+import polygonal.ds.PriorityQueue;
 
 /**
  * ...
@@ -130,8 +130,8 @@ class HPAStar implements IPathfinder
 		
 		startNode_.SetParent(null);
 		
-		var open:PriorityQueue<Node> = new PriorityQueue<Node>(true, 16);
-		var closed:PriorityQueue<Node> = new PriorityQueue<Node>(true, 16);
+		var open:PriorityQueue<Node> = new PriorityQueue<Node>(16, true);
+		var closed:PriorityQueue<Node> = new PriorityQueue<Node>(16, true);
 		
 		open.enqueue(startNode_);
 		#if action_output

@@ -1,8 +1,8 @@
 package pathPlanner;
 
-import de.polygonal.ds.HashableItem;
-import de.polygonal.ds.Prioritizable;
-import de.polygonal.ds.Cloneable;
+import polygonal.ds.HashableItem;
+import polygonal.ds.Prioritizable;
+import polygonal.ds.Cloneable;
 
 /**
  * ...
