@@ -1,6 +1,7 @@
 -cs bin/Unity
--D net-ver=40
+-D net-ver=45
 -D no-compilation
+-D no-root
 -D action_output
 -cp src
 -cp ds/src
@@ -22,4 +23,4 @@ pathPlanner.JPSPlus
 pathPlanner.Node
 pathPlanner.NodeHierarchical
 pathPlanner.PathUtility
--cmd "C:\Program Files\Unity\Editor\Data\Mono\bin\smcs" -target:library -out:bin\Unity\PathPlanner.dll -recurse:bin\Unity\src\*.cs
+-cmd "C:/Program Files/Unity/Editor/Data/Mono/bin/gmcs" -target:library -out:bin/Unity/PathPlanner.dll -recurse:bin/Unity/src/*.cs
